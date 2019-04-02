@@ -3,7 +3,7 @@ END PAGE
 --------------------> 
         <div class="footer">
             <div>
-                <strong>&copy; Copyright</strong> <?php echo date('Y'); ?> <a target="_blank" href="<?php echo $this->platformData['officialPathHttp']; ?>"><?php echo $this->platformData['siteName']; ?></a> | Tutti i diritti riservati
+                <small><strong>&copy; Copyright</strong> <?php echo date('Y'); ?> <a target="_blank" href="<?php echo $this->platformData['officialPathHttp']; ?>"><?php echo $this->platformData['siteName']; ?></a> | Tutti i diritti riservati</small>
             </div>
         </div>
     </div>
@@ -159,7 +159,7 @@ END PAGE
                 });
             });
             // Agency ->Noty Asta On
-            $('.confirmNotyOn').click(function () {
+            $('.confirmNotyOff').click(function () {
                 swal({
                     title: "Sei sicuro di voler disabilitare questa opzione ?",
                     text: "In questo modo non riverai più le emails con l'appuntamento di questa Asta!",

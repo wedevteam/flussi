@@ -433,6 +433,7 @@ class Exports extends Controller {
                             'Caminetto' => $asta["Caminetto"],
                             'FibraOttica' => $asta["FibraOttica"],
                             'ClasseEnergetica' => $asta["ClasseEnergetica"],
+                            'IndicePrestazioneEnergetica' => $asta["IndicePrestazioneEnergetica"],
                             'IDImmagine' => $asta["IDImmagine"],                    
                             'immagine_URL' => $immagine_URL,                            // In base a Pref. Agenzia
                             'immagine_DataModifica' => $immagineDataModifica,           // In base a Pref. Agenzia
@@ -815,22 +816,16 @@ class Exports extends Controller {
                     $NrAltreCamere = $dom_Immobili->createElement('NrAltreCamere', $asta['NrAltreCamere']); 
                     $Residenziale->appendChild($NrAltreCamere);
                 }
-                if ($asta['NrBagni']!=0) {
-                    $NrBagni = $dom_Immobili->createElement('NrBagni', $asta['NrBagni']); 
-                    $Residenziale->appendChild($NrBagni);
-                }
+                $NrBagni = $dom_Immobili->createElement('NrBagni', $asta['NrBagni']);
+                $Residenziale->appendChild($NrBagni);
                 if ($asta['Cucina']!=0) {
                     $Cucina = $dom_Immobili->createElement('Cucina', $asta['Cucina']); 
                     $Residenziale->appendChild($Cucina);
                 }
-                if ($asta['NrTerrazzi']!=0) {
-                    $NrTerrazzi = $dom_Immobili->createElement('NrTerrazzi', $asta['NrTerrazzi']); 
-                    $Residenziale->appendChild($NrTerrazzi);
-                }
-                if ($asta['NrBalconi']!=0) {
-                    $NrBalconi = $dom_Immobili->createElement('NrBalconi', $asta['NrBalconi']); 
-                    $Residenziale->appendChild($NrBalconi);
-                }
+                $NrTerrazzi = $dom_Immobili->createElement('NrTerrazzi', $asta['NrTerrazzi']);
+                $Residenziale->appendChild($NrTerrazzi);
+                $NrBalconi = $dom_Immobili->createElement('NrBalconi', $asta['NrBalconi']);
+                $Residenziale->appendChild($NrBalconi);
                 if ($asta['Ascensore']!='') {
                     $Ascensore = $dom_Immobili->createElement('Ascensore', $asta['Ascensore']); 
                     $Residenziale->appendChild($Ascensore);
@@ -939,6 +934,8 @@ class Exports extends Controller {
                     $Residenziale->appendChild($Energia);
                     //Elementi SottoNodo Energia
                     $ClasseEnergetica = $dom_Immobili->createElement('ClasseEnergetica', $asta['ClasseEnergetica']); 
+                    $Energia->appendChild($ClasseEnergetica);
+                    $ClasseEnergetica = $dom_Immobili->createElement('IndicePrestazioneEnergetica', $asta['IndicePrestazioneEnergetica']);
                     $Energia->appendChild($ClasseEnergetica);
                 }
 

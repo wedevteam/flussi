@@ -387,6 +387,15 @@
                                                                     echo '<br>-';
                                                                 }
                                                                 ?>
+                                                                  <br>
+                                                                  <strong>Totale Locali: </strong>
+                                                                  <?php
+                                                                  if ($this->data["NrLocali"]>0){
+                                                                      echo '<br>'.$this->data["NrLocali"];
+                                                                  } else {
+                                                                      echo '<br>-';
+                                                                  }
+                                                                  ?>
                                                                 <br>
                                                                 <strong>Camere da Letto: </strong>
                                                                 <?php 
@@ -486,19 +495,19 @@
                                                                     echo '<br>-';
                                                                 }
                                                                 ?>
-                                                                <br>
-                                                                <strong>Box Incluso: </strong>
-                                                                <?php 
-                                                                if ($this->data["BoxIncluso"]=="false"){
-                                                                    echo '<br>Assente';
-                                                                } else {
-                                                                    echo '<br>Presente';
-                                                                }
-                                                                ?>
                                                           </address>
                                                       </div>
                                                       <div class="col-md-4">
                                                           <address>
+                                                              <strong>Box Incluso: </strong>
+                                                              <?php
+                                                              if ($this->data["BoxIncluso"]=="false"){
+                                                                  echo '<br>Assente';
+                                                              } else {
+                                                                  echo '<br>Presente';
+                                                              }
+                                                              ?>
+                                                              <br>
                                                                 <strong>Num. Box: </strong>
                                                                 <?php 
                                                                 if ($this->data["NrBox"]>0){
@@ -644,7 +653,7 @@
                                                                 }
                                                                 ?>
                                                                 <br>
-                                                                <strong>Tipo Costruzione: </strong><br>Civile<?php //echo $this->data["TipoCostruzione"] ?>
+                                                                <strong>Tipo Costruzione: </strong><br>Medio Signorile<?php //echo $this->data["TipoCostruzione"] ?>
                                                                 <br>
                                                                 <strong>Stato Costruzione: </strong><br>Buono<?php //echo $this->data["StatoCostruzione"] ?>
                                                                 <br>

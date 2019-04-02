@@ -48,7 +48,7 @@ class Aste extends Controller {
         
         // Get Data
         $asteModel = new Aste_Model();
-        $arrAsteListAll = $asteModel->getAsteList(null,null);
+        $arrAsteListAll = $asteModel->getAsteList(null," id DESC ");
         if ($this->view->userLogged["role"]!="admin") {
             $relAsAgModel = new RelAsteAgenzie_Model();
             $arrAsteAgenziaList = $relAsAgModel->getRelAsteAgenzieList($this->view->userLogged["id"], Null, Null);
@@ -189,7 +189,6 @@ class Aste extends Controller {
                     "Prezzo" =>$Prezzo,
                     "riferimentoAnnuncio" =>$RifAnnuncio,
                     "nomeAgente" =>$nomeAgente,
-                    "riferimentoAnnuncio" =>$RifAnnuncio,
                     "flagRichiestaVisione" =>$flagRichiestaVisione,
                     "dataRichiestaVisione" =>$dataRichiestaVisione
                 );
@@ -448,36 +447,36 @@ class Aste extends Controller {
                 $mime_boundary = "----Meeting Booking----".MD5(TIME());
                 
                 //Create ICAL Content (Google rfc 2445 for details and examples of usage) 
-                $ical =    'BEGIN:VCALENDAR
-                    PRODID:-//Microsoft Corporation//Outlook 11.0 MIMEDIR//EN
-                    VERSION:2.0
-                    METHOD:PUBLISH
-                    BEGIN:VEVENT
-                    ORGANIZER:MAILTO:'.$from_address.'
-                    DTSTART:'.$dtstart.'
-                    DTEND:'.$dtend.'
-                    LOCATION:'.$meeting_location.'
-                    TRANSP:OPAQUE
-                    SEQUENCE:0
-                    UID:'.$cal_uid.'
-                    DTSTAMP:'.$todaystamp.'
-                    DESCRIPTION:'.$meeting_description.'
-                    SUMMARY:'.$subject.'
-                    PRIORITY:5
-                    CLASS:PUBLIC
-                    END:VEVENT
-                    END:VCALENDAR';   
+//                $ical =    'BEGIN:VCALENDAR
+//                    PRODID:-//Microsoft Corporation//Outlook 11.0 MIMEDIR//EN
+//                    VERSION:2.0
+//                    METHOD:PUBLISH
+//                    BEGIN:VEVENT
+//                    ORGANIZER:MAILTO:'.$from_address.'
+//                    DTSTART:'.$dtstart.'
+//                    DTEND:'.$dtend.'
+//                    LOCATION:'.$meeting_location.'
+//                    TRANSP:OPAQUE
+//                    SEQUENCE:0
+//                    UID:'.$cal_uid.'
+//                    DTSTAMP:'.$todaystamp.'
+//                    DESCRIPTION:'.$meeting_description.'
+//                    SUMMARY:'.$subject.'
+//                    PRIORITY:5
+//                    CLASS:PUBLIC
+//                    END:VEVENT
+//                    END:VCALENDAR';
                 
                 
                 
                 //Invia email
-                $to      = $this->view->userLogged["email"]; 
-                $subject = 'Appuntamento Asta | '.$this->view->platformData["siteName"];
-                include ('public/template/utente_apptoasta.php');
-                $headers = "From: ".$this->view->platformData["emailFromDesc"]." <".$this->view->platformData["emailFrom"].">". "\r\n";
-                $headers .= "MIME-Version: 1.0\r\n";
-                $headers .= "Content-type: text/html; charset=UTF-8";
-                $functions->sendEmail ($to, $subject, $emailText, $headers) ;
+//                $to      = $this->view->userLogged["email"];
+//                $subject = 'Appuntamento Asta | '.$this->view->platformData["siteName"];
+//                include ('public/template/utente_apptoasta.php');
+//                $headers = "From: ".$this->view->platformData["emailFromDesc"]." <".$this->view->platformData["emailFrom"].">". "\r\n";
+//                $headers .= "MIME-Version: 1.0\r\n";
+//                $headers .= "Content-type: text/html; charset=UTF-8";
+//                $functions->sendEmail ($to, $subject, $emailText, $headers) ;
             }
             
             
@@ -631,7 +630,7 @@ class Aste extends Controller {
         $imageName = "";
         if (basename($_FILES["avatar"]["name"])!='') {
             if ($_FILES["avatar"]["error"] > 0) {
-                $this->index(ER_UPLOADFILE_FILENONVALIDO,null);
+                $this->index(ER_UPLOADFILE_FILENONVALIDO);
                 return false;
             }
             if ($_FILES["avatar"]["type"] != "image/png" 
@@ -711,7 +710,7 @@ class Aste extends Controller {
         $imageName = "";
         if (basename($_FILES["avatar"]["name"])!='') {
             if ($_FILES["avatar"]["error"] > 0) {
-                $this->index(ER_UPLOADFILE_FILENONVALIDO,null);
+                $this->index(ER_UPLOADFILE_FILENONVALIDO);
                 return false;
             }
             if ($_FILES["avatar"]["type"] != "image/png" 

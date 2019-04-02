@@ -50,12 +50,8 @@ class Login extends Controller {
             Session::set('loggedIn', true);
             Session::set(USER,$loggedUser);
             Functions::updateSessionTime();
-            if ($loggedUser['role']=='admin') { 
-                Functions::redirectToAction('dashboard/index');
-                // Functions::redirectToAction('aste/index');
-            } else {
-                Functions::redirectToAction('aste/index');
-            }
+            // Redirect
+            Functions::redirectToAction('dashboard/index');
         } else {
             // Error
             $error = ERR_LOGIN;

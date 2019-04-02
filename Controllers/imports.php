@@ -992,7 +992,7 @@ class Imports extends Controller {
                                     // ':Arredamento' => $nuovoImmobile->Arredamento, (default: 255 - assente)
                                     // ':StatoArredamento' => $nuovoImmobile->StatoArredamento, (default: 4 - buono)
                                     // ':AnnoCostruzione' => $nuovoImmobile->AnnoCostruzione, (default: 0)
-                                    // ':TipoCostruzione' => $nuovoImmobile->TipoCostruzione, (default: 2 - civile)
+                                    ':TipoCostruzione' => $nuovoImmobile->TipoCostruzione, // (default: 3 - Medio Signorile)
                                     // ':StatoCostruzione' => $nuovoImmobile->StatoCostruzione, (default: 4 - buono)
                                     ':Allarme' => $nuovoImmobile->Allarme,
                                     ':Piscina' => $nuovoImmobile->Piscina,
@@ -1001,8 +1001,8 @@ class Imports extends Controller {
                                     ':Idromassaggio' => $nuovoImmobile->Idromassaggio,
                                     ':VideoCitofono' => $nuovoImmobile->VideoCitofono,
                                     ':FibraOttica' => $nuovoImmobile->FibraOttica,
-                                    ':ClasseEnergetica' => $nuovoImmobile->ClasseEnergetica,
-                                    // ':IndicePrestazioneEnergetica' => $nuovoImmobile->IndicePrestazioneEnergetica, (default: 0)
+                                    ':ClasseEnergetica' => $nuovoImmobile->ClasseEnergetica, // (di default G)
+                                    ':IndicePrestazioneEnergetica' => $nuovoImmobile->IndicePrestazioneEnergetica, // (default: 0)
                                     // ':EsenteClasseEnergetica' => $nuovoImmobile->EsenteClasseEnergetica, (default: 0)
                                     // ':Energia' => $nuovoImmobile->Energia,  (default: "")
                                     ':IDImmagine' => $nuovoImmobile->IDImmagine,
@@ -1218,7 +1218,7 @@ class Imports extends Controller {
             $string = preg_replace($regex, '', $string);
 
             $result99 = "";
-            $current;
+            // $current;
             $length = strlen($string);
             for ($i=0; $i < $length; $i++) {
                 $current = ord($string{$i});
@@ -1230,7 +1230,7 @@ class Imports extends Controller {
                     (($current >= 0x10000) && ($current <= 0x10FFFF)))  {
                     $result99 .= chr($current);
                 } else {
-                    $ret;    // use this to strip invalid character(s)
+                    // $ret;    // use this to strip invalid character(s)
                     // $ret .= " ";    // use this to replace them with spaces
                 }
             }

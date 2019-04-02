@@ -3,6 +3,7 @@
     <head>
         <meta charset="UTF-8">
         <title><?php echo $this->platformData['siteName'] ?></title>
+        <meta name="lang" content="IT">
         <meta name="keywords" content="<?php echo $this->platformData['metaKeywords'] ?>" />
         <meta name="description" content="<?php echo $this->platformData['metaDesritpion'] ?>">
         <meta name="author" content="http://www.wedevteam.com">
@@ -51,29 +52,20 @@
             <div id="page-wrapper" class="gray-bg">
                 <div class="row border-bottom white-bg">
                     <nav class="navbar navbar-expand-lg navbar-static-top" role="navigation">
-                        <?php  if ($this->userLogged["role"]=="admin") { ?>
-                            <a href="<?php echo URL ?>dashboard/index" class="navbar-brand" 
-                               style="background-color:#FFFFFF;" title="FlussiAste">
-                                <img src="<?php echo URL;?>public/images/favicon-flussiaste.png" style="max-width:40px;" >
-                            </a>
-                        <?php  } else { ?>
-                            <a href="<?php echo URL ?>aste/index" class="navbar-brand" 
-                               style="background-color:#FFFFFF;" title="FlussiAste">
-                                <img src="<?php echo URL;?>public/images/favicon-flussiaste.png" style="max-width:40px;" >
-                            </a>
-                        <?php  } ?>
+                        <a href="<?php echo URL ?>dashboard/index" class="navbar-brand"
+                           style="background-color:#FFFFFF;" title="FlussiAste">
+                            <img src="<?php echo URL;?>public/images/favicon-flussiaste.png" style="max-width:40px;" />
+                        </a>
                         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-label="Toggle navigation">
                             <i class="fa fa-reorder"></i>
                         </button>
                         <div class="navbar-collapse collapse" id="navbar">
                             <ul class="nav navbar-nav mr-auto">
-                                <?php  if ($this->userLogged["role"]=="admin") { ?>
-                                    <li class=" <?php echo $this->mainMenu["menuDashboard"] ?>">
-                                        <a aria-expanded="false" role="button" href="<?php echo URL ?>dashboard/index"> 
-                                            Dashboard
-                                        </a>
-                                    </li>
-                                <?php } ?>
+                                <li class=" <?php echo $this->mainMenu["menuDashboard"] ?>">
+                                    <a aria-expanded="false" role="button" href="<?php echo URL ?>dashboard/index">
+                                        Dashboard
+                                    </a>
+                                </li>
                                 <li class="<?php echo $this->mainMenu["menuAste"] ?>">
                                     <a aria-expanded="false" role="button" href="<?php echo URL ?>aste/index"> 
                                         Aste
@@ -127,12 +119,29 @@
                                     </a>
                                 </li>-->
                                 <li class="dropdown" <?php echo $this->mainMenu["menuProfile"] ?>>
-                                    <a aria-expanded="false" role="button" href="#" class="dropdown-toggle" data-toggle="dropdown"> 
-                                        <img src="<?php echo URL_THEME ?>img/user-avatar.png" class=" circle" style="width:30px;border-radius:50px;"> &nbsp;Profilo 
+                                    <a aria-expanded="false" role="button" href="#" class="dropdown-toggle" data-toggle="dropdown">
+                                        <?php
+                                        if ($this->userLogged["role"]=="admin"){
+                                            ?>
+                                            <img src="<?php echo URL ?>public/images/favicon-flussiaste.png" class=" circle"
+                                                 style="width:30px;border-radius:50px;border:1px solid #eee;" /> &nbsp;Profilo
+                                            <?php
+                                        } else {
+                                            if ($this->userLogged["URLImmagine"]!="" && $this->userLogged["URLImmagine"]!=null) {
+                                                ?>
+                                                <img src="<?php echo $this->userLogged["URLImmagine"]; ?>" class=" circle" style="width:30px;border-radius:50px;"/> &nbsp;Profilo
+                                                <?php
+                                            } else {
+                                                ?>
+                                                <img src="<?php echo URL_THEME ?>img/user-avatar.png" class=" circle" style="width:30px;border-radius:50px;"/> &nbsp;Profilo
+                                                <?php
+                                            }
+                                        }
+                                        ?>
                                     </a>
                                     <ul role="menu" class="dropdown-menu">
                                         <li><a href="<?php echo URL ?>profile/index">Account</a></li>
-<!--                                        <li><a href="<?php //echo URL ?>account/pref">Preferenze</a></li>-->
+<!--                                        <li><a href="<?php //echo URL ?>account/pref">Impostazioni</a></li>-->
                                         <li><a href="<?php echo URL ?>login/index">Esci</a></li>
                                     </ul>
                                 </li>

@@ -201,7 +201,21 @@ class Aste_Model extends Model {
         $result = $this->db->select(TAB_ASTE, $data, $where, $parameters, true);
         return $result;
     }
-    
+
+    // SELECT COUNT - Num.Aste per CodiceComuneTribunale
+    public function getNumAsteFromTribunale($codiceComuneTribunale){
+        $data = ' id ';
+        $where = '  codiceComuneTribunale=:codiceComuneTribunale AND status!=:statusDeleted AND status!=:statusError ';
+        $parameters = array();
+        $parameters[":codiceComuneTribunale"] = $codiceComuneTribunale;
+        $parameters[":statusDeleted"] = "deleted";
+        $parameters[":statusError"] = "error";
+        $result = $this->db->selectCount(TAB_ASTE,$data,$where,$parameters);
+
+        return $result;
+    }
+
+
     
 }
 
