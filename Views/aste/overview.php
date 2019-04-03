@@ -235,10 +235,15 @@
                                                         }
                                                         if ($this->data["Latitudine"]!="" && $this->data["Longitudine"]!="") {
                                                             ?>
-                                                            <div class="col-md-12">
+                                                            <!--<div class="col-md-12">
                                                                 <br>
                                                                 <div class="google-map" id="pano" style="height: 250px"></div>
+                                                            </div>-->
+                                                            <div class="col-md-12">
+                                                                <br>
+                                                                <div class="google-map" id="map1" style="height:250px;"></div>
                                                             </div>
+
                                                             <?php
                                                         }
                                                         ?>

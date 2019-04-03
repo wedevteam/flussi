@@ -1,21 +1,18 @@
-
-<body class="gray-bg">
+<!--class="gray-bg"-->
+<body  style="background-color:#253645;">
 
     <div class="loginColumns animated fadeInDown">
         <div class="row">
-            <div class="col-md-6">
-
+            <div class="col-md-6 text-white">
                 <h2 class="font-bold text-center">Benvenuto in  <?php echo $this->platformData["siteName"]; ?></h2>
                 <p>
-                    Tutti i dati delle case all'asta direttamente sul tuo gestionale.
+                    Il primo gestionale specializzato per aiutare le Agenzie che trattano le Aste Immobiliari.
                 </p>
-
                 <p>
-                    Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s.
+                    Risparmia subito fino al 80% del tuo tempo prezioso.
                 </p>
-
                 <p>
-                    When an unknown printer took a galley of type and scrambled it to make a type specimen book.
+                    Fai eseguire in automatico a Flussi Aste il lavoro ripetitivo dell'inserimento degli annunci su Getrix e usa il tuo tempo per le attività che portano più guadagno alla tua Agenzia!
                 </p>
             </div>
             <div class="col-md-6">

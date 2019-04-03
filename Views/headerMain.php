@@ -24,7 +24,10 @@
         <link href="<?php echo URL_THEME;?>css/plugins/select2/select2.min.css" rel="stylesheet">
         <!--chosen-->
         <link href="<?php echo URL_THEME;?>css/plugins/chosen/bootstrap-chosen.css" rel="stylesheet">
-        
+        <!--clockpicker-->
+        <link href="<?php echo URL_THEME;?>css/plugins/clockpicker/clockpicker.css" rel="stylesheet">
+        <!--Datapicker-->
+        <link href="<?php echo URL_THEME;?>css/plugins/datapicker/datepicker3.css" rel="stylesheet">
         
          <?php
         // LOAD LINKS specifici della VIEW

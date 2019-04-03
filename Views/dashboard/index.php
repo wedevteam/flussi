@@ -99,7 +99,7 @@
                                         <thead>
                                         <tr class="bg-flussi-light">
                                             <th>Tribunale</th>
-                                            <th class="text-center">Num. Aste</th>
+                                            <th class="text-center" data-type="numeric">Num. Aste</th>
                                         </tr>
                                         </thead>
                                         <tbody>
@@ -108,7 +108,7 @@
                                                 ?>
                                                 <tr>
                                                     <td><?php echo $item["nome"]." (".$item["siglaprovincia"].")" ?></td>
-                                                    <td class="text-center"><?php echo $item["numAste"] ?></td>
+                                                    <td class="text-center" data-value="<?php echo $item["numAste"] ?>"><?php echo $item["numAste"] ?></td>
                                                 </tr>
                                                 <?php
                                             }
@@ -275,7 +275,21 @@
                                                     <td class="text-center">
                                                         <img src="<?php echo $item["immagine_URL"] ?>" style="max-height: 25px;" />
                                                     </td>
-                                                    <td><?php echo $item["id"]; ?></td>
+                                                    <?php
+                                                    if ($this->userLogged["role"]=="admin") {
+                                                        ?>
+                                                        <td data-value="<?php echo $item["id"]; ?>">
+                                                            <?php echo $item["id"]; ?>
+                                                        </td>
+                                                        <?php
+                                                    } else {
+                                                        ?>
+                                                        <td data-value="<?php echo $item["id"]; ?>">
+                                                            <?php echo $item["id"]."-".$this->userLogged["id"]; ?>
+                                                        </td>
+                                                        <?php
+                                                    }
+                                                    ?>
                                                     <td><?php echo $item["rge"]." / ".$item["lotto"]; ?></td>
                                                     <td><?php echo $item["ComuneTribunale"]." (".$item["SiglaProvTribunale"].")"; ?></td>
                                                     <td>
@@ -448,7 +462,21 @@
                                                             <img src="<?php echo $item["immagine_URL"] ?>" style="max-height: 25px;" />
                                                         </a>
                                                     </td>
-                                                    <td><?php echo $item["id"]; ?>#</td>
+                                                    <?php
+                                                    if ($this->userLogged["role"]=="admin") {
+                                                        ?>
+                                                        <td data-value="<?php echo $item["id"]; ?>">
+                                                            <?php echo $item["id"]; ?>
+                                                        </td>
+                                                        <?php
+                                                    } else {
+                                                        ?>
+                                                        <td data-value="<?php echo $item["id"]; ?>">
+                                                            <?php echo $item["id"]."-".$this->userLogged["id"]; ?>
+                                                        </td>
+                                                        <?php
+                                                    }
+                                                    ?>
                                                     <td><?php echo $item["rge"]." / ".$item["lotto"]; ?></td>
                                                     <td><?php echo $item["ComuneTribunale"]." (".$item["SiglaProvTribunale"].")"; ?></td>
                                                     <td>

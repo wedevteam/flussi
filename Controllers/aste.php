@@ -385,10 +385,10 @@ class Aste extends Controller {
                 $this->edit(ER_ASTA_EDIT_ORAVISIONE);
                 return false;
             }
-            $dataRichiestaVisione = $_POST['dataRichiestaVisione'];
-            $oraRichiestaVisione = $_POST['oraRichiestaVisione'].":00";
-        } 
-        
+            echo $dataRichiestaVisione = substr($_POST['dataRichiestaVisione'],6,4)."-".substr($_POST['dataRichiestaVisione'],3,2)."-".substr($_POST['dataRichiestaVisione'],0,2) ;
+            echo $oraRichiestaVisione = $_POST['oraRichiestaVisione'].":00";
+        }
+
         // Verifica se Prima era in visione e se lo era, se la data/ora erano diverse
         $isEmailVisione = false;
         if ( $_POST['flagRichiestaVisione']=="true") {
@@ -432,6 +432,8 @@ class Aste extends Controller {
             
             // Invio App.to Email
             if ($isEmailVisione) {
+                $funcionsModel = new Functions();
+
                 // Predisponi dati per Email//Convert MYSQL datetime and construct iCal start, end and issue dates
                 $meeting_date = $dataRichiestaVisione." ".$oraRichiestaVisione;
                 $meeting_duration = 3600; // 1h
@@ -439,44 +441,69 @@ class Aste extends Controller {
                 $dtstart= GMDATE("Ymd\THis\Z",$meetingstamp);
                 $dtend= GMDATE("Ymd\THis\Z",$meetingstamp+$meeting_duration);
                 $todaystamp = GMDATE("Ymd\THis\Z");
+                $meeting_location = $this->view->data["CodiceComune"]." - ".$this->view->data["Indirizzo"];
+                $meeting_description = "Visione Asta riferimento: ".$this->view->data["rge"]."/".$this->view->data["lotto"];
 
                 //Create unique identifier
-                $cal_uid = DATE('Ymd').'T'.DATE('His')."-".RAND()."@mydomain.com";
+                $cal_uid = DATE('Ymd').'T'.DATE('His')."-".RAND()."@ym-dev.com";
 
                 //Create Mime Boundry
                 $mime_boundary = "----Meeting Booking----".MD5(TIME());
-                
+
+                // Predisponi INVIO
+                $to      = "pamela.palazzini@gmail.com"; // $this->view->userLogged["email"];
+                $subject = 'Appuntamento Visione Asta | '.$this->view->platformData["siteName"];
+                include ('public/template/utente_apptoasta.php');
+                $headers = "From: ".$this->view->platformData["emailFromDesc"]." <".$this->view->platformData["emailFrom"].">". "\r\n";
+                $headers .= "MIME-Version: 1.0\r\n";
+                // $headers .= "Content-type: text/html; charset=UTF-8";
+                $headers .= "Content-Type: multipart/alternative; boundary=\"$mime_boundary\"\n";
+                $headers .= "Content-class: urn:content-classes:calendarmessage\n";
+
+                //Create Email Body (HTML)
+                $message = "";
+                $message .= "--$mime_boundary\n";
+                $message .= "Content-Type: text/html; charset=UTF-8\n";
+                $message .= "Content-Transfer-Encoding: 8bit\n\n";
+
+                $message .= "<html>\n";
+                $message .= "<body>\n";
+                $message .= '<p>Gentile Agenzia,</p>';
+                $message .= '<p>'.$this->view->platformData["siteName"]." ti invia appuntamento per la Visione dell'Immobile all'Asta.</p>";
+                $message .= "</body>\n";
+                $message .= "</html>\n";
+                $message .= "--$mime_boundary\n";
+
                 //Create ICAL Content (Google rfc 2445 for details and examples of usage) 
-//                $ical =    'BEGIN:VCALENDAR
-//                    PRODID:-//Microsoft Corporation//Outlook 11.0 MIMEDIR//EN
-//                    VERSION:2.0
-//                    METHOD:PUBLISH
-//                    BEGIN:VEVENT
-//                    ORGANIZER:MAILTO:'.$from_address.'
-//                    DTSTART:'.$dtstart.'
-//                    DTEND:'.$dtend.'
-//                    LOCATION:'.$meeting_location.'
-//                    TRANSP:OPAQUE
-//                    SEQUENCE:0
-//                    UID:'.$cal_uid.'
-//                    DTSTAMP:'.$todaystamp.'
-//                    DESCRIPTION:'.$meeting_description.'
-//                    SUMMARY:'.$subject.'
-//                    PRIORITY:5
-//                    CLASS:PUBLIC
-//                    END:VEVENT
-//                    END:VCALENDAR';
-                
-                
-                
+                $ical =    'BEGIN:VCALENDAR
+                    PRODID:-//Microsoft Corporation//Outlook 11.0 MIMEDIR//EN
+                    VERSION:2.0
+                    METHOD:PUBLISH
+                    BEGIN:VEVENT
+                    ORGANIZER:MAILTO:'.$this->view->platformData["emailFrom"].'
+                    DTSTART:'.$dtstart.'
+                    DTEND:'.$dtend.'
+                    LOCATION:'.$meeting_location.'
+                    TRANSP:OPAQUE
+                    SEQUENCE:0
+                    UID:'.$cal_uid.'
+                    DTSTAMP:'.$todaystamp.'
+                    DESCRIPTION:'.$meeting_description.'
+                    SUMMARY:'.$subject.'
+                    PRIORITY:5
+                    CLASS:PUBLIC
+                    END:VEVENT
+                    END:VCALENDAR';
+                $message .= 'Content-Type: text/calendar;name="meeting.ics";method=REQUEST\n';
+                $message .= "Content-Transfer-Encoding: 8bit\n\n";
+                $message .= $ical;
+
+
                 //Invia email
-//                $to      = $this->view->userLogged["email"];
-//                $subject = 'Appuntamento Asta | '.$this->view->platformData["siteName"];
-//                include ('public/template/utente_apptoasta.php');
-//                $headers = "From: ".$this->view->platformData["emailFromDesc"]." <".$this->view->platformData["emailFrom"].">". "\r\n";
-//                $headers .= "MIME-Version: 1.0\r\n";
-//                $headers .= "Content-type: text/html; charset=UTF-8";
-//                $functions->sendEmail ($to, $subject, $emailText, $headers) ;
+
+                if (!$funcionsModel->sendEmailWithResult ($to, $subject, $message, $headers) ){
+                    echo "Err invio email";exit;
+                }
             }
             
             

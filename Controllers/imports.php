@@ -528,6 +528,9 @@ class Imports extends Controller {
                 if (isset($row[36]) && trim($row[36]) != '') {
                     $nuovoImmobile->Testo = $this->sostituisci_carattere($a,$b,$numero,$row[36]);
                     $nuovoImmobile->Testo = $this->sanitizeXML($nuovoImmobile->Testo);
+                    if (strlen($nuovoImmobile->Testo)>2900) {
+                        $nuovoImmobile->Testo = substr($nuovoImmobile->Testo,0,2900)."...";
+                    }
                 }  else {
                     $nuovoImmobile->uploadValido = false;
                     $nuovoImmobile->status = "error";
@@ -645,7 +648,7 @@ class Imports extends Controller {
                        $nuovoImmobile->GiardinoCondominiale = "true";  
                    }
                 }  
-                $nuovoImmobile->GiardinoPrivato = 0;  
+                $nuovoImmobile->GiardinoPrivato = 0;  // Non specificato
                 if (isset($row[56]) && trim($row[56]) != '') {
                    if ( strtolower($row[56])=="presente" ) {
                         $nuovoImmobile->GiardinoPrivato = 1;  
@@ -829,7 +832,35 @@ class Imports extends Controller {
                     $nuovoImmobile->altriBeni7 = $this->sostituisci_carattere($a,$b,$numero,$row[76]);
                     $nuovoImmobile->altriBeni7 = $this->sanitizeXML($nuovoImmobile->altriBeni7);
                     $nuovoImmobile->altriBeni7 = substr($nuovoImmobile->altriBeni7,0,990) . "...";
-                }    
+                }
+
+                // Aggiungi ALTRI BENI AL TESTO (Descrizione)
+                if ($nuovoImmobile->altriBeni1 != '') {
+                    $nuovoImmobile->Testo .= ' BENE AGGIUNTIVO: ' .$nuovoImmobile->altriBeni1;
+                }
+                if ($nuovoImmobile->altriBeni2 != '') {
+                    $nuovoImmobile->Testo .= ' BENE AGGIUNTIVO: ' .$nuovoImmobile->altriBeni2;
+                }
+                if ($nuovoImmobile->altriBeni3 != '') {
+                    $nuovoImmobile->Testo .= ' BENE AGGIUNTIVO: ' .$nuovoImmobile->altriBeni3;
+                }
+                if ($nuovoImmobile->altriBeni4 != '') {
+                    $nuovoImmobile->Testo .= ' BENE AGGIUNTIVO: ' .$nuovoImmobile->altriBeni4;
+                }
+                if ($nuovoImmobile->altriBeni5 != '') {
+                    $nuovoImmobile->Testo .= ' BENE AGGIUNTIVO: ' .$nuovoImmobile->altriBeni5;
+                }
+                if ($nuovoImmobile->altriBeni6 != '') {
+                    $nuovoImmobile->Testo .= ' BENE AGGIUNTIVO: ' .$nuovoImmobile->altriBeni6;
+                }
+                if ($nuovoImmobile->altriBeni7 != '') {
+                    $nuovoImmobile->Testo .= ' BENE AGGIUNTIVO: ' .$nuovoImmobile->altriBeni7;
+                }
+                if (strlen($nuovoImmobile->Testo)>2900) {
+                    $nuovoImmobile->Testo = substr($nuovoImmobile->Testo,0,2900)."...";
+                }
+
+
 
                 // ======================================================VALUTA SE IMMOBILE PRESENTE
                 // Set valori per aggiornamenti

@@ -94,7 +94,7 @@
                                             <th class="text-center">
                                                 <i class="fa fa-picture-o"></i>
                                             </th>
-                                            <th class="text-center">ID#</th>
+                                            <th class="text-center" data-type="number">ID#</th>
                                             <th data-toggle="true">
                                                 Rge / Lotto
                                             </th>
@@ -104,16 +104,16 @@
                                             <th>
                                                 Indirizzo
                                             </th>
-                                            <th class="text-center">
+                                            <th class="text-center" data-type="numeric">
                                                 Data Asta
                                             </th>
-                                            <th class="text-center">
+                                            <th class="text-center" data-type="numeric">
                                                 Base Asta
                                             </th>
-                                            <th class="text-center">
+                                            <th class="text-center" data-type="numeric">
                                                 Offerta Min.
                                             </th>
-                                            <th class="text-center">
+                                            <th class="text-center" data-type="numeric">
                                                 Mq
                                             </th>
                                             <th data-hide="all">
@@ -168,7 +168,21 @@
                                                 <td class="text-center">
                                                     <img src="<?php echo $item["immagine_URL"] ?>" style="max-height: 25px;" />
                                                 </td>
-                                                <td><?php echo $item["id"]; ?></td>
+                                                <?php
+                                                if ($this->userLogged["role"]=="admin") {
+                                                    ?>
+                                                    <td data-value="<?php echo $item["id"]; ?>">
+                                                        <?php echo $item["id"]; ?>
+                                                    </td>
+                                                    <?php
+                                                } else {
+                                                    ?>
+                                                    <td data-value="<?php echo $item["id"]; ?>">
+                                                        <?php echo $item["id"]."-".$this->userLogged["id"]; ?>
+                                                    </td>
+                                                    <?php
+                                                }
+                                                ?>
                                                 <td><?php echo $item["rge"]." / ".$item["lotto"]; ?></td>
                                                 <td><?php echo $item["ComuneTribunale"]." (".$item["SiglaProvTribunale"].")"; ?></td>
                                                 <td>
@@ -176,16 +190,28 @@
                                                     <br>
                                                     <?php echo $item["Strada_testo"] . " ". $item["Indirizzo"]. " ". $item["Civico"]; ?>
                                                 </td>
-                                                <td class="text-center">
+                                                <?php
+                                                $dataAstaSort = "";
+                                                if ($item["dataAsta"]!=Null && $item["dataAsta"]!="0000-00-00") {
+                                                    $dataAstaSort = substr($item["dataAsta"],0,4) .substr($item["dataAsta"],5,2) .substr($item["dataAsta"],8,2)  ;
+                                                }
+                                                ?>
+                                                <td class="text-center" data-type="number"  data-value="<?php echo $dataAstaSort; ?>">
                                                     <?php 
                                                     if ($item["dataAsta"]!=Null && $item["dataAsta"]!="0000-00-00") {
                                                         echo date("d/m/y", strtotime($item["dataAsta"])) ; 
                                                     } 
                                                     ?>
                                                 </td>
-                                                <td class="text-center"><?php echo number_format($item["importoBaseAsta"],2,',','.'); ?></td>
-                                                <td class="text-center"><?php echo number_format($item["importoOffertaMinima"],2,',','.');  ?></td>
-                                                <td class="text-center"><?php echo $item["MQSuperficie"]; ?></td>
+                                                <td class="text-center" data-value="<?php echo $item["importoBaseAsta"]; ?>">
+                                                    <?php echo number_format($item["importoBaseAsta"],2,',','.'); ?>
+                                                </td>
+                                                <td class="text-center" data-value="<?php echo $item["importoOffertaMinima"]; ?>">
+                                                    <?php echo number_format($item["importoOffertaMinima"],2,',','.');  ?>
+                                                </td>
+                                                <td class="text-center"  data-type="number" data-value="<?php echo $item["MQSuperficie"]; ?>">
+                                                    <?php echo $item["MQSuperficie"]; ?>
+                                                </td>
                                                 <td>
                                                     <?php 
                                                     if ($item["linkTribunale"]!="") {

@@ -862,7 +862,7 @@ class Exports extends Controller {
                     $GiardinoCondominiale = $dom_Immobili->createElement('GiardinoCondominiale', $asta['GiardinoCondominiale']); 
                     $Residenziale->appendChild($GiardinoCondominiale);
                 }
-                $GiardinoPrivato = $dom_Immobili->createElement('GiardinoPrivato', '1'); 
+                $GiardinoPrivato = $dom_Immobili->createElement('GiardinoPrivato', $asta['GiardinoPrivato']);
                 $Residenziale->appendChild($GiardinoPrivato);
                 if ($asta['AriaCondizionata']!=0) {
                     $AriaCondizionata = $dom_Immobili->createElement('AriaCondizionata', $asta['AriaCondizionata']); 

@@ -46,25 +46,38 @@ END PAGE
     <script src="<?php echo URL_THEME;?>js/plugins/select2/select2.full.min.js"></script>
     <!-- Chosen -->
     <script src="<?php echo URL_THEME;?>js/plugins/chosen/chosen.jquery.js"></script>
+    <!-- Clock picker -->
+    <script src="<?php echo URL_THEME;?>js/plugins/clockpicker/clockpicker.js"></script>
+    <!-- Data picker -->
+    <script src="<?php echo URL_THEME;?>js/plugins/datapicker/bootstrap-datepicker.js"></script>
+
+
   <?php  
     // LOAD JS Example specifici della VIEW
     if (isset($this->includeFooterExampleJs) && $this->includeFooterExampleJs != null) {
         include(URL_DOCUMENT_ROOT . $this->includeFooterExampleJs);
     }
     ?>
-<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDvq9ebE1yTHAtBJCak5S_b-DtTamFf_9Y"></script>
-
+    <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDvq9ebE1yTHAtBJCak5S_b-DtTamFf_9Y"></script>
 
     <script>
-
         $('.chosen-select').chosen({width: "100%"});
-        
         <!--Footable-->
         $(document).ready(function() {
-
             $('.footable').footable();
             $('.footable2').footable();
+        });
 
+        // Clock picker
+        $('.clockpicker').clockpicker();
+        // Datapicker (bootstrap datepicker)
+        var mem = $('.datapickerbox .input-group.date').datepicker({
+            todayBtn: "linked",
+            keyboardNavigation: false,
+            forceParse: false,
+            calendarWeeks: true,
+            autoclose: true,
+            format: 'dd/mm/yyyy'
         });
 
         $(document).ready(function () {
@@ -101,8 +114,8 @@ END PAGE
            });
 
         });
-        
-        
+
+
         // Get cities
         $.get('<?php echo URL; ?>libs/Functions/GetCities', function (data) {
             $(".cities").typeahead({  source: data });
@@ -124,8 +137,7 @@ END PAGE
                     swal("Inviate!", "Le credenziali sono state inviate!", "success");
                 });
             });
-            
-            
+
             // Asta(admin) ->remove 
             $('.confirmRemoveAsta').click(function () {
                 swal({
@@ -141,8 +153,7 @@ END PAGE
                     swal("Eliminata", "L'Asta è stata rimossa.", "success");
                 });
             }); 
-            
-            
+
             // Agency ->Noty Asta On
             $('.confirmNotyOn').click(function () {
                 swal({
@@ -184,23 +195,46 @@ END PAGE
                     // Options for Google map
                     // More info see: https://developers.google.com/maps/documentation/javascript/reference#MapOptions
 
-                    var fenway = new google.maps.LatLng(<?php echo $this->data["Latitudine"];?>, <?php echo $this->data["Longitudine"];?>);
-                    var mapOptions5 = {
-                        zoom: 14,
-                        center: fenway,
-                        // Style for Google Maps
-                        styles: [{featureType:"landscape",stylers:[{saturation:-100},{lightness:65},{visibility:"on"}]},{featureType:"poi",stylers:[{saturation:-100},{lightness:51},{visibility:"simplified"}]},{featureType:"road.highway",stylers:[{saturation:-100},{visibility:"simplified"}]},{featureType:"road.arterial",stylers:[{saturation:-100},{lightness:30},{visibility:"on"}]},{featureType:"road.local",stylers:[{saturation:-100},{lightness:40},{visibility:"on"}]},{featureType:"transit",stylers:[{saturation:-100},{visibility:"simplified"}]},{featureType:"administrative.province",stylers:[{visibility:"off"}]/**/},{featureType:"administrative.locality",stylers:[{visibility:"off"}]},{featureType:"administrative.neighborhood",stylers:[{visibility:"on"}]/**/},{featureType:"water",elementType:"labels",stylers:[{visibility:"on"},{lightness:-25},{saturation:-100}]},{featureType:"water",elementType:"geometry",stylers:[{hue:"#ffff00"},{lightness:-25},{saturation:-97}]}]
-                    };
-                    var panoramaOptions = {
-                        position: fenway,
-                        pov: {
-                            heading: 10,
-                            pitch: 10
-                        }
-                    };
-                    var panorama = new google.maps.StreetViewPanorama(document.getElementById('pano'), panoramaOptions);
+                    // PANORAMA
+                    //var fenway = new google.maps.LatLng(<?php //echo $this->data["Latitudine"];?>//, <?php //echo $this->data["Longitudine"];?>//);
+                    //var mapOptions5 = {
+                    //    zoom: 14,
+                    //    center: fenway,
+                    //    // Style for Google Maps
+                    //    styles: [{featureType:"landscape",stylers:[{saturation:-100},{lightness:65},{visibility:"on"}]},{featureType:"poi",stylers:[{saturation:-100},{lightness:51},{visibility:"simplified"}]},{featureType:"road.highway",stylers:[{saturation:-100},{visibility:"simplified"}]},{featureType:"road.arterial",stylers:[{saturation:-100},{lightness:30},{visibility:"on"}]},{featureType:"road.local",stylers:[{saturation:-100},{lightness:40},{visibility:"on"}]},{featureType:"transit",stylers:[{saturation:-100},{visibility:"simplified"}]},{featureType:"administrative.province",stylers:[{visibility:"off"}]/**/},{featureType:"administrative.locality",stylers:[{visibility:"off"}]},{featureType:"administrative.neighborhood",stylers:[{visibility:"on"}]/**/},{featureType:"water",elementType:"labels",stylers:[{visibility:"on"},{lightness:-25},{saturation:-100}]},{featureType:"water",elementType:"geometry",stylers:[{hue:"#ffff00"},{lightness:-25},{saturation:-97}]}]
+                    //};
+                    //var panoramaOptions = {
+                    //    position: fenway,
+                    //    pov: {
+                    //        heading: 10,
+                    //        pitch: 10
+                    //    }
+                    //};
+                    //var panorama = new google.maps.StreetViewPanorama(document.getElementById('pano'), panoramaOptions);
 
-                }                     
+
+                    var myLatLng = {lat: <?php echo $this->data["Latitudine"];?>, lng: <?php echo $this->data["Longitudine"];?>};
+
+                    // MAP1
+                    var mapOptions1 = {
+                        zoom: 19,
+                        center: new google.maps.LatLng(<?php echo $this->data["Latitudine"];?>, <?php echo $this->data["Longitudine"];?>),
+
+                        // Style for Google Maps
+                        styles: [{"featureType":"water","stylers":[{"saturation":43},{"lightness":-11},{"hue":"#0088ff"}]},{"featureType":"road","elementType":"geometry.fill","stylers":[{"hue":"#ff0000"},{"saturation":-100},{"lightness":99}]},{"featureType":"road","elementType":"geometry.stroke","stylers":[{"color":"#808080"},{"lightness":54}]},{"featureType":"landscape.man_made","elementType":"geometry.fill","stylers":[{"color":"#ece2d9"}]},{"featureType":"poi.park","elementType":"geometry.fill","stylers":[{"color":"#ccdca1"}]},{"featureType":"road","elementType":"labels.text.fill","stylers":[{"color":"#767676"}]},{"featureType":"road","elementType":"labels.text.stroke","stylers":[{"color":"#ffffff"}]},{"featureType":"poi","stylers":[{"visibility":"off"}]},{"featureType":"landscape.natural","elementType":"geometry.fill","stylers":[{"visibility":"on"},{"color":"#b8cb93"}]},{"featureType":"poi.park","stylers":[{"visibility":"on"}]},{"featureType":"poi.sports_complex","stylers":[{"visibility":"on"}]},{"featureType":"poi.medical","stylers":[{"visibility":"on"}]},{"featureType":"poi.business","stylers":[{"visibility":"simplified"}]}]
+                    };
+
+                    // Get all html elements for map
+                    var mapElement1 = document.getElementById('map1');
+                    // Create the Google Map using elements
+                    var map1 = new google.maps.Map(mapElement1, mapOptions1);
+                    var marker = new google.maps.Marker({
+                        position: myLatLng,
+                        map: map1,
+                        title: 'Hello World!'
+                    });
+                }
+
                 <?php
             }
         }

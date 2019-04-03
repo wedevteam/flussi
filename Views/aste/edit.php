@@ -269,7 +269,7 @@
                                                                   }
                                                               } else {
                                                                   if ($this->relAsteAgenzia["flagRichiestaVisione"]=="true" && $this->relAsteAgenzia["dataRichiestaVisione"]!="0000-00-00") {
-                                                                      $data= $this->relAsteAgenzia["dataRichiestaVisione"];
+                                                                      $data= substr($this->relAsteAgenzia["dataRichiestaVisione"],8,2)."/".substr($this->relAsteAgenzia["dataRichiestaVisione"],5,2)."/".substr($this->relAsteAgenzia["dataRichiestaVisione"],0,4) ;
                                                                   }
                                                                   if ($this->relAsteAgenzia["flagRichiestaVisione"]=="true" && $this->relAsteAgenzia["oraRichiestaVisione"]!="00:00:00") {
                                                                       $ora= substr($this->relAsteAgenzia["oraRichiestaVisione"],0,5);
@@ -277,19 +277,29 @@
                                                               }
                                                               ?>
                                                               <div class="col-md-4">
-                                                                  <div class="form-group">
+                                                                  <div class="form-group datapickerbox">
                                                                       <label>Data richiesta visione</label>
-                                                                      <input class="form-control" name="dataRichiestaVisione"
-                                                                             placeholder="gg/mm/aaaa" type="date"
-                                                                             value="<?php echo $data; ?>">
+                                                                      <div class="input-group date">
+                                                                            <span class="input-group-addon">
+                                                                                <i class="fa fa-calendar"></i>
+                                                                            </span>
+                                                                            <input name="dataRichiestaVisione" type="text"
+                                                                                 class="form-control" placeholder="gg/mm/aaaa"
+                                                                                value="<?php  echo $data; ?>">
+                                                                      </div>
                                                                   </div>
                                                               </div>
                                                               <div class="col-md-4">
                                                                   <div class="form-group">
                                                                       <label>Ora</label>
-                                                                      <input class="form-control" name="oraRichiestaVisione"
-                                                                             placeholder="hh:mm" type="time"
-                                                                             value="<?php echo $ora; ?>">
+                                                                      <div class="input-group clockpicker" data-autoclose="true">
+                                                                          <input type="text" class="form-control"
+                                                                                 style="color:black;" name="oraRichiestaVisione"
+                                                                                 placeholder="hh:mm" value="<?php  echo $ora; ?>" >
+                                                                          <span class="input-group-addon">
+                                                                                <span class="fa fa-clock-o"></span>
+                                                                          </span>
+                                                                      </div>
                                                                   </div>
                                                               </div>
 

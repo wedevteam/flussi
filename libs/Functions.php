@@ -291,8 +291,15 @@ class Functions extends Model {
     //=========================================================================
     function sendEmail ($to, $subject, $message, $headers) { 
         mail($to, $subject, $message, $headers); 
-    } 
-    
+    }
+    function sendEmailWithResult ($to, $subject, $message, $headers) {
+        if (mail($to, $subject, $message, $headers)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
     /*
      * -----------------------------------------
      * JSON COMUNI X SELECT
