@@ -3,7 +3,7 @@
   <component name="WebServers">
     <option name="servers">
       <webServer id="6c939cd5-314c-41b9-a890-0abf6da6bb4b" name="ymdev_flussi" url="http://ym-dev.com/">
-        <fileTransfer host="lhcp1028.webapps.net" port="21" rootFolder="/flussi">
+        <fileTransfer host="lhcp1028.webapps.net" port="21">
           <advancedOptions>
             <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
           </advancedOptions>

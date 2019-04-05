@@ -34,7 +34,7 @@
                                         </li>
                                         <li>
                                             <a class="nav-link" href="<?php echo URL ?>aste/editImg?iditem=<?php echo $this->data["id"]; ?>">
-                                                <i class="fa fa-picture-o"></i> Immagine
+                                                <i class="fa fa-picture-o"></i> Immagini
                                             </a>
                                         </li>
                                     </ul>

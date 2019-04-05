@@ -1,14 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="PublishConfigData" serverName="ymdev_flussi">
+  <component name="PublishConfigData" autoUpload="Always" serverName="ymdev_flussi" autoUploadExternalChanges="true">
     <serverData>
       <paths name="ymdev_flussi">
         <serverdata>
           <mappings>
-            <mapping local="$PROJECT_DIR$" web="/" />
+            <mapping deploy="flussi" local="$PROJECT_DIR$" web="flussi" />
           </mappings>
         </serverdata>
       </paths>
     </serverData>
+    <option name="myAutoUpload" value="ALWAYS" />
   </component>
 </project>

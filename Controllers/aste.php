@@ -325,6 +325,7 @@ class Aste extends Controller {
         }
         $this->view->relImg = $arrImg;
 
+
         
         // View
         $this->view->render('aste/overview', true, HEADER_MAIN);
@@ -801,12 +802,21 @@ class Aste extends Controller {
             }
             $this->view->relAsteAgenzia = $relAsteAgModel->getDataFromIdAgIdAsta($this->view->userLogged["id"], $_GET["iditem"]);
         }
+
+        // Leggi Img Aggiuntive rispetto alla prima
+        $relImgModel = new RelAsteImg_Model();
+        if ($this->view->userLogged["role"]=="admin") {
+            $arrImg = $relImgModel->getRelAsteImgList($_GET["iditem"],null,$this->view->userLogged["role"]);
+        } else {
+            $arrImg = $relImgModel->getRelAsteImgList($_GET["iditem"],$this->view->userLogged["id"],$this->view->userLogged["role"]);
+        }
+        $this->view->relImg = $arrImg;
         
         
         // View
         $this->view->render('aste/editImg', true, HEADER_MAIN);
     }
-    // POST: Execut EDIT IMG (SOLO AGENZIA)
+    // POST: Execut EDIT IMG - IMMAGINE PRINCIPALE -(SOLO AGENZIA)
     public function executeEditImg() {
         // Check
         if ($this->view->userLogged["role"]=="admin") {
@@ -894,7 +904,165 @@ class Aste extends Controller {
             return false;
         }
     }
-    // POST: Execut EDIT IMG (SOLO ADMIN)
+    // POST: Execut EDIT IMG - IMMAGINI AGGIUNTIVE -(SOLO AGENZIA)
+    public function executeEditImages() {
+        // Check
+        if ($this->view->userLogged["role"]=="admin") {
+            Session::destroy();
+            $this->func->redirectToAction("login/index");
+            exit;
+        }
+        // Checks
+        if (!$this->CheckIdItemExists($_GET["iditem"])) {
+            $this->edit(ER_ASTA_EDIT_GENERIC);
+            return false;
+        }// Get Data
+        $this->view->data = $this->model->getDataFromId($_GET["iditem"]);
+        $relAsteAgModel = new RelAsteAgenzie_Model();
+        // Get Record RelAsteAgenzie
+        // Checks
+        if (!$this->CheckIdItemExistsRel($this->view->userLogged["id"], $_GET["iditem"])) {
+            $this->edit(ER_ASTA_EDIT_GENERIC);
+            return false;
+        }
+        $this->view->relAsteAgenzia = $relAsteAgModel->getDataFromIdAgIdAsta($this->view->userLogged["id"], $_GET["idrel"]);
+
+        // ====================================================
+        //CHECKS FILES
+        // Count total files
+        $countfiles = count($_FILES['avatar']['name']);
+        // Looping all files
+        for($i=0;$i<$countfiles;$i++){
+            if (basename($_FILES["avatar"]["name"][$i])!='') {
+                if ($_FILES["avatar"]["error"][$i] > 0) {
+                    $this->index(ER_UPLOADFILE_FILENONVALIDO);
+                    return false;
+                }
+                if ($_FILES["avatar"]["type"][$i] != "image/png"
+                    && $_FILES["avatar"]["type"][$i]!= "image/jpeg"
+                    && $_FILES["avatar"]["type"][$i]!= "image/jpg") {
+                    $this->editImg(ER_UPLOADFILE_ESTENSIONENONVALIDA,null);
+                    return false;
+                }
+                if ( ($_FILES["avatar"]["size"][$i]) > 5000000 ) {
+                    $this->editImg(ER_UPLOADFILE_SIZENONVALIDA,null);
+                    return false;
+                }
+                // UPLOAD EFFETTIVO
+                if ($fileName0 = basename($_FILES["avatar"]["name"][$i])==""){$imageName=$_POST['avatar'];}
+                else{
+                    $fileName0 = basename($_FILES["avatar"]["name"][$i]);
+                    $temp0 = explode(".", $_FILES["avatar"]["name"][$i]);
+                    $imageName = 'img-'.$_GET["iditem"]."-".round(microtime(true)).$i. '.' . end($temp0);
+                }
+                if ($fileName0 = basename($_FILES["avatar"]["name"][$i])!=""){
+                    $target_path = $_SERVER['DOCUMENT_ROOT'] . "/flussi/public/images/".$imageName;
+                    if (!move_uploaded_file($_FILES["avatar"]["tmp_name"][$i], $target_path)){
+                        $this->editImg(ER_UPLOADFILE_PROBLEMAUPLOAD,null);
+                        return false;
+                    }
+                }
+            }
+
+            if ( $imageName=="" ) {
+                $this->edit(ER_UPLOADFILE_FILESNONVALIDI);
+                return false;
+            }
+            $immagine_URL = URL .'public/images/'. $imageName;
+
+            // Set last edit
+            $lastEdit = date('Y-m-d H:i:s');
+            $DataModifica = substr($lastEdit,0,10).'T'.substr($lastEdit,11,8);
+            // Set values
+            $data = array(
+                ':idAsta' =>  $_GET["iditem"],
+                ':idAgenzia' => $this->view->userLogged["id"],
+                ':fonte' => "manuale",
+                ':immagine_URL' => $immagine_URL,
+                ':IDImmagine' => 0,
+                ':immagine_Titolo' => "",
+                ':immagine_TipoFoto' => "F",
+                ':immagine_Posizione' => 1,
+                ':immagine_Titolo' => "",
+                ':DataModifica' => $DataModifica,
+                ':DataModifica_d' => $lastEdit
+            );
+            $relAsteImgModel = new RelAsteImg_Model();
+            $idRecord = $relAsteImgModel->create($data);
+        }
+
+
+        // ====================================================
+
+
+
+        // UPdate Last edit su rel
+        // Set values
+        $data = array(
+            ':DataModifica_d' => $lastEdit,
+            ':DataModifica' => $DataModifica
+        );
+        $where = " id=:id ";
+        $parameters = array();
+        $parameters[":id"] = $_GET["idrel"];
+
+
+        // Update
+        if ($relAsteAgModel->updateData($data,$parameters,$where)) {
+            // View
+            $this->editImg(null,MESS_MODIFICHE_SALVATE);
+        } else {
+            $this->editImg(ER_GENERICO,null);
+            return false;
+        }
+    }
+    // POST: Remove IMG AGGIUNTIVA (SOLO AGENZIA)
+    public function removeImgAgency() {
+        // Check
+        if ($this->view->userLogged["role"]=="admin") {
+            Session::destroy();
+            $this->func->redirectToAction("login/index");
+            exit;
+        }
+        // Checks
+        if (!$this->CheckIdItemExists($_GET["iditem"])) {
+            $this->editImg();
+            return false;
+        }
+        // Get Data
+        $this->view->data = $this->model->getDataFromId($_GET["iditem"]);
+        // Check POSTS
+        if (!isset($_GET["idrel"]) || $_GET["idrel"]=="") {
+            $this->editImg(ER_GENERICO);
+            return false;
+        }
+        // Check id rel
+        if (! $this->CheckIdImgAgenziaExists($_GET["idrel"],$_GET["iditem"])) {
+            $this->editImg(ER_GENERICO);
+            return false;
+        }
+
+        // Elimina Immagine
+        $where = '  id=:id AND idAgenzia=:idAgenzia AND fonte=:fonte ';
+        $parameters = array();
+        $parameters[":id"] = $_GET["idrel"];
+        $parameters[":idAgenzia"] = $_GET["iditem"];
+        $parameters[":fonte"] = "manuale";
+
+
+        // Delete
+        $relAsteImgModel = new RelAsteImg_Model();
+        if ($relAsteImgModel->deleteItem($where,$parameters)) {
+            // View
+            $this->editImg(null,MESS_MODIFICHE_SALVATE);
+        } else {
+            $this->editImg(ER_GENERICO,null);
+            return false;
+        }
+
+    }
+
+    // POST: Execut EDIT IMG - IMMAGINE PRINCIPALE (SOLO ADMIN)
     public function executeEditImgA() {
         // Check
         if ($this->view->userLogged["role"]!="admin") {
@@ -974,8 +1142,113 @@ class Aste extends Controller {
             return false;
         }
     }
-    
-    
+    // POST: Execut EDIT IMG - IMMAGINI AGGIUNTIVE -(SOLO ADMIN)
+    public function executeEditImagesA() {
+        // Check
+        if ($this->view->userLogged["role"]!="admin") {
+            Session::destroy();
+            $this->func->redirectToAction("login/index");
+            exit;
+        }
+        // Checks
+        if (!$this->CheckIdItemExists($_GET["iditem"])) {
+            $this->edit(ER_ASTA_EDIT_GENERIC);
+            return false;
+        }
+        // Get Data
+        $this->view->data = $this->model->getDataFromId($_GET["iditem"]);
+
+        // ====================================================
+        //CHECKS FILES
+        // Count total files
+        $countfiles = count($_FILES['avatar']['name']);
+        // Looping all files
+        for($i=0;$i<$countfiles;$i++){
+            if (basename($_FILES["avatar"]["name"][$i])!='') {
+                if ($_FILES["avatar"]["error"][$i] > 0) {
+                    $this->index(ER_UPLOADFILE_FILENONVALIDO);
+                    return false;
+                }
+                if ($_FILES["avatar"]["type"][$i] != "image/png"
+                    && $_FILES["avatar"]["type"][$i]!= "image/jpeg"
+                    && $_FILES["avatar"]["type"][$i]!= "image/jpg") {
+                    $this->editImg(ER_UPLOADFILE_ESTENSIONENONVALIDA,null);
+                    return false;
+                }
+                if ( ($_FILES["avatar"]["size"][$i]) > 5000000 ) {
+                    $this->editImg(ER_UPLOADFILE_SIZENONVALIDA,null);
+                    return false;
+                }
+                // UPLOAD EFFETTIVO
+                if ($fileName0 = basename($_FILES["avatar"]["name"][$i])==""){$imageName=$_POST['avatar'];}
+                else{
+                    $fileName0 = basename($_FILES["avatar"]["name"][$i]);
+                    $temp0 = explode(".", $_FILES["avatar"]["name"][$i]);
+                    $imageName = 'img-'.$_GET["iditem"]."-".round(microtime(true)).$i. '.' . end($temp0);
+                }
+                if ($fileName0 = basename($_FILES["avatar"]["name"][$i])!=""){
+                    $target_path = $_SERVER['DOCUMENT_ROOT'] . "/flussi/public/images/".$imageName;
+                    if (!move_uploaded_file($_FILES["avatar"]["tmp_name"][$i], $target_path)){
+                        $this->editImg(ER_UPLOADFILE_PROBLEMAUPLOAD,null);
+                        return false;
+                    }
+                }
+            }
+
+            if ( $imageName=="" ) {
+                $this->edit(ER_UPLOADFILE_FILESNONVALIDI);
+                return false;
+            }
+            $immagine_URL = URL .'public/images/'. $imageName;
+
+            // Set last edit
+            $lastEdit = date('Y-m-d H:i:s');
+            $DataModifica = substr($lastEdit,0,10).'T'.substr($lastEdit,11,8);
+            // Set values
+            $data = array(
+                ':idAsta' =>  $_GET["iditem"],
+                ':idAgenzia' => 0,
+                ':fonte' => "manuale",
+                ':immagine_URL' => $immagine_URL,
+                ':IDImmagine' => 0,
+                ':immagine_Titolo' => "",
+                ':immagine_TipoFoto' => "F",
+                ':immagine_Posizione' => 1,
+                ':immagine_Titolo' => "",
+                ':DataModifica' => $DataModifica,
+                ':DataModifica_d' => $lastEdit
+            );
+            $relAsteImgModel = new RelAsteImg_Model();
+            $idRecord = $relAsteImgModel->create($data);
+        }
+
+
+        // ====================================================
+
+
+
+        // UPdate Last edit su rel
+        // Set values
+        $data = array(
+            ':DataModifica_d' => $lastEdit,
+            ':DataModifica' => $DataModifica
+        );
+        $where = " id=:id ";
+        $parameters = array();
+        $parameters[":id"] = $_GET["idrel"];
+
+
+        // Update
+        if ($this->model->updateData($data,$parameters,$where)) {
+            // View
+            $this->editImg(null,MESS_MODIFICHE_SALVATE);
+        } else {
+            $this->editImg(ER_GENERICO,null);
+            return false;
+        }
+    }
+
+
     
     
     
@@ -1012,7 +1285,20 @@ class Aste extends Controller {
         }
         return false;
     }
-    
+    // Check Id immagine aggiuntiva Agenzia exists
+    function CheckIdImgAgenziaExists($idItem,$idAgenzia) {
+        if (!isset($idItem) || !isset($idAgenzia)) {
+            return false;
+        }
+        if ($idItem==null || $idItem=="" || $idAgenzia==null || $idAgenzia=="") {
+            return false;
+        } else {
+            if ($this->model->getDataFromId($idItem,$idAgenzia)!=NULL) {
+                return true;
+            }
+        }
+        return false;
+    }
     
     
     

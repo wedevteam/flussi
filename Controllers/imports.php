@@ -790,19 +790,17 @@ class Imports extends Controller {
                 }    
                 $nuovoImmobile->ClasseEnergetica = "G"; 
                 
-                $nuovoImmobile->immagine_URL = "";  
-                $nuovoImmobile->IDImmagine = 1;  
-                $nuovoImmobile->immagine_DataModifica = substr($nuovoImmobile->DataInserimento_d,0,10).'T'.substr($nuovoImmobile->DataInserimento_d,11,19);
-                if (isset($row[69]) && trim($row[69]) != '' && substr($row[68],0,4)=="http" ) {
-                   $nuovoImmobile->immagine_URL = $row[69];  
-                } else {
-                   $nuovoImmobile->immagine_URL = "http://www.flussiaste.com/flussi/public/uploads/flussiaste-default.png";
-                }
+//                $nuovoImmobile->immagine_URL = "http://www.flussiaste.com/flussi/public/uploads/flussiaste-default.png";
+//                $nuovoImmobile->IDImmagine = 0;
+//                $nuovoImmobile->immagine_DataModifica = substr($nuovoImmobile->DataInserimento_d,0,10).'T'.substr($nuovoImmobile->DataInserimento_d,11,19);
+//                if (isset($row[69]) && trim($row[69]) != '' && substr($row[68],0,4)=="http" ) {
+//                   $nuovoImmobile->immagine_URL = $row[69];
+//                }
 
 
                 // ======================================================IMMAGINI
                 $nuovoImmobile->immagine_URL = "http://www.flussiaste.com/flussi/public/uploads/flussiaste-default.png";
-                $nuovoImmobile->IDImmagine = 1;
+                $nuovoImmobile->IDImmagine = 0;
                 $nuovoImmobile->immagine_DataModifica = substr($nuovoImmobile->DataInserimento_d,0,10).'T'.substr($nuovoImmobile->DataInserimento_d,11,19);
                 if (isset($row[69]) && trim($row[69]) != '') {
                     $arrImg = array();
@@ -956,7 +954,7 @@ class Imports extends Controller {
                                     }
                                 }
                             }
-                            if ($nuovoImmobile->isNew) {
+
                                 // Set values
                                 $data = array(
                                     ':idImport' => $nuovoImmobile->idImport,
@@ -1155,7 +1153,7 @@ class Imports extends Controller {
                                                 ':idAsta' => $idRecord,
                                                 ':idAgenzia' => 0,
                                                 ':fonte' => "csv",
-                                                ':IDImmagine' => $indiceImg,
+                                                ':IDImmagine' => 0,
                                                 ':immagine_URL' => $img,
                                                 ':immagine_Posizione' => $indiceImg-1,
                                                 ':immagine_TipoFoto' => "F",
@@ -1169,9 +1167,28 @@ class Imports extends Controller {
                                             $idRecordImg = $relImgModel->create($data3);
                                         }
                                     }
+                                } else {
+                                    // Inserisci Immagine unica
+                                    $dataModifica = date("Y-m-d H:i:s");
+                                    $data3 = array(
+                                        ':idAsta' => $idRecord,
+                                        ':idAgenzia' => 0,
+                                        ':fonte' => "csv",
+                                        ':IDImmagine' => 0,
+                                        ':immagine_URL' => $immagineAgenzia,
+                                        ':immagine_Posizione' => 0,
+                                        ':immagine_TipoFoto' => "F",
+                                        ':immagine_Titolo' => "",
+                                        ':dataModifica_d' => $dataModifica,
+                                        ':dataModifica' => substr($dataModifica,0,10).'T'.substr($dataModifica,11,19)
+                                    );
+
+                                    // Add
+                                    $relImgModel = new RelAsteImg_Model();
+                                    $idRecordImg = $relImgModel->create($data3);
                                 }
                                 // ====================================
-                            }
+
                         } else {
                             // UPDATE IMMOBILE GIA' PRESENTE
                             // Set Data

@@ -51,8 +51,15 @@ END PAGE
     <!-- Data picker -->
     <script src="<?php echo URL_THEME;?>js/plugins/datapicker/bootstrap-datepicker.js"></script>
 
+    <!--Gallery--><!-- blueimp gallery -->
+    <script src="<?php echo URL_THEME;?>js/plugins/blueimp/jquery.blueimp-gallery.min.js"></script>
 
-  <?php  
+
+<script src="<?php echo URL_THEME;?>js/plugins/dataTables/datatables.min.js"></script>
+<script src="<?php echo URL_THEME;?>js/plugins/dataTables/dataTables.bootstrap4.min.js"></script>
+
+
+<?php
     // LOAD JS Example specifici della VIEW
     if (isset($this->includeFooterExampleJs) && $this->includeFooterExampleJs != null) {
         include(URL_DOCUMENT_ROOT . $this->includeFooterExampleJs);
@@ -67,6 +74,35 @@ END PAGE
             $('.footable').footable();
             $('.footable2').footable();
         });
+
+
+        $(document).ready(function(){
+            $('.dataTables-example').DataTable({
+                pageLength: 25,
+                responsive: true,
+                dom: '<"html5buttons"B>lTfgitp',
+                buttons: [
+                    //{ extend: 'copy'},
+                    {extend: 'csv'},
+                    // {extend: 'excel', title: 'Lista Aste'},
+                    //{extend: 'pdf', title: 'ExampleFile'},
+
+                    {extend: 'print',
+                        customize: function (win){
+                            $(win.document.body).addClass('white-bg');
+                            $(win.document.body).css('font-size', '10px');
+
+                            $(win.document.body).find('table')
+                                .addClass('compact')
+                                .css('font-size', 'inherit');
+                        }
+                    }
+                ]
+
+            });
+
+        });
+
 
         // Clock picker
         $('.clockpicker').clockpicker();
@@ -184,6 +220,23 @@ END PAGE
                     swal("Email disabilitata!", "L'opzione è stata disabilitata con successo!", "success");
                 });
             });
+
+
+        // Agency ->confirm remove img
+        // $('.confirmRemoveImgAg').click(function () {
+        //     swal({
+        //         title: "Sei sicuro di voler rimuovere questa immagine?",
+        //         text: "In questo modo verrà rimossa definitivamente",
+        //         type: "warning",
+        //         showCancelButton: true,
+        //         confirmButtonColor: "#1ab394",
+        //         confirmButtonText: "Si rimuovi!",
+        //         closeOnConfirm: false
+        //     }, function () {
+        //         // $( "#btnResetCred" ).click();
+        //         swal("Rimossa!", "La rimozione è avvenuta!", "success");
+        //     });
+        // });
 
         <?php
         if (isset($this->Coordinate)) {

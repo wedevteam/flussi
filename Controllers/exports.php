@@ -16,6 +16,7 @@ require 'Models/importdetails_model.php';
 require 'Models/exportdetails_model.php';
 require 'Models/relasteagenzie_model.php';
 require 'Models/relagenziepref_model.php';
+require 'Models/relasteimg_model.php';
 
 class Exports extends Controller {
 
@@ -347,7 +348,7 @@ class Exports extends Controller {
                         // Agenzia LUFFARELLI
                         if ($agency["id"]==3) {
                             $trovato = false;
-                            if ($asta["codiceComuneTribunale"]=="058111" ) {
+                            if ($asta["codiceComuneTribunale"]=="058111" || $asta["codiceComuneTribunale"]=="058032" ) {
                                 $trovato = true;
                             }
                         }
@@ -450,22 +451,48 @@ class Exports extends Controller {
                     
                 }
             }
-            
-            
-            
+
         }
+
+
         if (sizeof($arrAsteList)==0) {
             $this->create(ER_EXPORT_IMM_NONPRESENTI);
             return false;
         }
-        
-        
-        
+
+        // Leggi tutte le immagini
+        $relImgModel = new RelAsteImg_Model();
+        $resImg = $relImgModel->getRelAsteImgAllList();
+        $arrImg = array();
+        if (is_array($resImg) || is_object($resImg)) {
+            foreach ($resImg as $img){
+                $arrItem = array(
+                    'id' => $img["id"],
+                    'idAsta' => $img["idAsta"],
+                    'idAgenzia' => $img["idAgenzia"],
+                    'fonte' => $img["fonte"],
+                    'immagine_URL' => $img["immagine_URL"],
+                    'IDImmagine' => $img["IDImmagine"],
+                    'immagine_Titolo' => $img["immagine_Titolo"],
+                    'immagine_TipoFoto' => $img["immagine_TipoFoto"],
+                    'immagine_Posizione' => $img["immagine_Posizione"],
+                    'DataModifica' => $img["DataModifica"],
+                    'DataModifica_d' => $img["DataModifica_d"]
+                );
+                // Add
+                array_push($arrImg,$arrItem);
+            }
+        }
+
+
+        // print_r($arrImg);
+
+
         // =============================== CREA FILE XML
         // Agenzie
         $this->createXMLfile_Agenzie($arrAgencyList,"20a50f55e1a79d0616fa21a80c262928");
         // Immobili
-        $this->createXMLfile_Immobili($arrAsteList,"20a50f55e1a79d0616fa21a80c262928");
+        $this->createXMLfile_Immobili($arrAsteList,"20a50f55e1a79d0616fa21a80c262928",$arrImg);
         
         
         
@@ -667,7 +694,7 @@ class Exports extends Controller {
 
     
     //FUNZIONE CREA FILE XML (IMMOBILI)
-    function createXMLfile_Immobili($arrAsteList, $IDGestionale){
+    function createXMLfile_Immobili($arrAsteList, $IDGestionale, $arrImg){
         // Sets
         // $filePath_Immobili  = 'xml/immobili.xml';
         $filePath_Immobili  = 'xml/immobiliTEST.xml';
@@ -828,8 +855,10 @@ class Exports extends Controller {
                     $NrAltreCamere = $dom_Immobili->createElement('NrAltreCamere', $asta['NrAltreCamere']); 
                     $Residenziale->appendChild($NrAltreCamere);
                 }
-                $NrBagni = $dom_Immobili->createElement('NrBagni', $asta['NrBagni']);
-                $Residenziale->appendChild($NrBagni);
+                if ($asta['NrBagni']!=0) {
+                    $NrBagni = $dom_Immobili->createElement('NrBagni', $asta['NrBagni']);
+                    $Residenziale->appendChild($NrBagni);
+                }
                 if ($asta['Cucina']!=0) {
                     $Cucina = $dom_Immobili->createElement('Cucina', $asta['Cucina']); 
                     $Residenziale->appendChild($Cucina);
@@ -947,30 +976,68 @@ class Exports extends Controller {
                     //Elementi SottoNodo Energia
                     $ClasseEnergetica = $dom_Immobili->createElement('ClasseEnergetica', $asta['ClasseEnergetica']); 
                     $Energia->appendChild($ClasseEnergetica);
-                    $ClasseEnergetica = $dom_Immobili->createElement('IndicePrestazioneEnergetica', $asta['IndicePrestazioneEnergetica']);
-                    $Energia->appendChild($ClasseEnergetica);
+//                    $ClasseEnergetica = $dom_Immobili->createElement('IndicePrestazioneEnergetica', $asta['IndicePrestazioneEnergetica']);
+//                    $Energia->appendChild($ClasseEnergetica);
                 }
 
-                //SottoNodo Immagini
+                //Nodo Immagini
                 $Immagini   	= $dom_Immobili->createElement('Immagini', ''); 
-                $Immobile->appendChild($Immagini);	
-                //SottoNodo Immagine
-                $Immagine = $dom_Immobili->createElement('Immagine', ''); 
-                $Immagini->appendChild($Immagine);
-                $Immagine->setAttribute('IDImmagine', $asta['IDImmagine']);
+                $Immobile->appendChild($Immagini);
+
+                    //SottoNodo Immagine
+                    $Immagine = $dom_Immobili->createElement('Immagine', '');
+                    $Immagini->appendChild($Immagine);
+                    $Immagine->setAttribute('IDImmagine', $asta['IDImmagine']);
                     //Elementi SottoNodo Immagine
-                    $URL = $dom_Immobili->createElement('URL', htmlspecialchars($asta['immagine_URL'])); 
+                    $URL = $dom_Immobili->createElement('URL', htmlspecialchars($asta['immagine_URL']));
                     $Immagine->appendChild($URL);
-                    $DataModifica = $dom_Immobili->createElement('DataModifica', $asta['immagine_DataModifica']); 
+                    $DataModifica = $dom_Immobili->createElement('DataModifica', $asta['immagine_DataModifica']);
                     $Immagine->appendChild($DataModifica);
-                    $Posizione = $dom_Immobili->createElement('Posizione', $asta['immagine_Posizione']); 
+                    $Posizione = $dom_Immobili->createElement('Posizione', $asta['immagine_Posizione']);
                     $Immagine->appendChild($Posizione);
-                    $TipoFoto = $dom_Immobili->createElement('TipoFoto', $asta['immagine_TipoFoto']); 
+                    $TipoFoto = $dom_Immobili->createElement('TipoFoto', $asta['immagine_TipoFoto']);
                     $Immagine->appendChild($TipoFoto);
                     if ($asta['immagine_Titolo']!='') {
-                        $Titolo = $dom_Immobili->createElement('Titolo', $asta['immagine_Titolo']); 
+                        $Titolo = $dom_Immobili->createElement('Titolo', $asta['immagine_Titolo']);
                         $Immagine->appendChild($Titolo);
                     }
+
+                // Aggiungi Immagini
+                if (is_array($arrImg) || is_object($arrImg)) {
+                    foreach($arrImg as $img){
+                        $trovato = false;
+                        if ($img["idAsta"]==$asta['IDImmobile'] && $img["immagine_Posizione"]!=0) {
+                            if ($img["fonte"]=="csv") {
+                                $trovato = true;
+                            }
+                            if ($img["fonte"]=="manuale" && $img["idAgenzia"]==$asta['idAgenzia']) {
+                                $trovato = true;
+                            }
+                            if ($img["fonte"]=="manuale" && $img["idAgenzia"]==0) {
+                                $trovato = true;
+                            }
+                        }
+                        if ($trovato) {
+                            //SottoNodo Immagine
+                            $Immagine = $dom_Immobili->createElement('Immagine', '');
+                            $Immagini->appendChild($Immagine);
+                            $Immagine->setAttribute('IDImmagine', $img['id']);
+                            //Elementi SottoNodo Immagine
+                            $URL = $dom_Immobili->createElement('URL', htmlspecialchars($img['immagine_URL']));
+                            $Immagine->appendChild($URL);
+                            $DataModifica = $dom_Immobili->createElement('DataModifica', $img['DataModifica']);
+                            $Immagine->appendChild($DataModifica);
+//                            $Posizione = $dom_Immobili->createElement('Posizione', $img['immagine_Posizione']);
+//                            $Immagine->appendChild($Posizione);
+                            $TipoFoto = $dom_Immobili->createElement('TipoFoto', $img['immagine_TipoFoto']);
+                            $Immagine->appendChild($TipoFoto);
+                            if ($img['immagine_Titolo']!='') {
+                                $Titolo = $dom_Immobili->createElement('Titolo', $img['immagine_Titolo']);
+                                $Immagine->appendChild($Titolo);
+                            }
+                        }
+                    }
+                }
 
 
             $root_Immobili->appendChild($Immobile);

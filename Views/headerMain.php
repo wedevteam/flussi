@@ -28,8 +28,12 @@
         <link href="<?php echo URL_THEME;?>css/plugins/clockpicker/clockpicker.css" rel="stylesheet">
         <!--Datapicker-->
         <link href="<?php echo URL_THEME;?>css/plugins/datapicker/datepicker3.css" rel="stylesheet">
-        
-         <?php
+
+        <!--Gallery-->
+        <link href="<?php echo URL_THEME;?>css/plugins/blueimp/css/blueimp-gallery.min.css" rel="stylesheet">
+
+
+        <?php
         // LOAD LINKS specifici della VIEW
         if (isset($this->includeHeadLinks) && $this->includeHeadLinks!=null ) {
             include(URL_DOCUMENT_ROOT.$this->includeHeadLinks);

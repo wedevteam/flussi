@@ -81,13 +81,14 @@
                                 <p class="alert alert-info">Non ci sono aste</p>
                             </div>
                         <?php } else { ?>
-                            
-                            <input type="text" class="form-control form-control-sm m-b-xs" id="filter"
-                                   placeholder="Cerca nella tabella">
+<!--                            -->
+<!--                            <input type="text" class="form-control form-control-sm m-b-xs" id="filter"-->
+<!--                                   placeholder="Cerca nella tabella">-->
                             <hr/>
                             <div class="table-responsive">
-                               <table class="footable table table-stripped toggle-arrow-tiny"  
-                                      data-filter="#filter" data-limit-navigation="3">
+                                <!--footable table table-stripped toggle-arrow-tiny-->
+                               <table class="footable table table-striped table-bordered table-hover dataTables-example"
+                                      data-limit-navigation="3">
                                     <thead>
                                         <tr class="bg-flussi-light">
                                             <th data-toggle="true" class="text-center"></th>
@@ -281,14 +282,14 @@
                                             </tr>
                                         <?php } ?>
                                     </tbody>
-                                    <tfoot>
-                                    <tr>
-                                        <?php if ($this->userLogged["role"]=="admin") { $num=21;}else{$num=24;} ?>
-                                        <td colspan="<?php echo $num;?>">
-                                            <ul class="pagination float-right"></ul>
-                                        </td>
-                                    </tr>
-                                    </tfoot>
+<!--                                    <tfoot>-->
+<!--                                        <tr>-->
+<!--                                            --><?php //if ($this->userLogged["role"]=="admin") { $num=21;}else{$num=24;} ?>
+<!--                                            <td colspan="--><?php //echo $num;?><!--">-->
+<!--                                                <ul class="pagination float-right"></ul>-->
+<!--                                            </td>-->
+<!--                                        </tr>-->
+<!--                                    </tfoot>-->
                                 </table>
                             </div>
                         <?php } ?>
