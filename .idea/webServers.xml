@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="WebServers">
+    <option name="servers">
+      <webServer id="6c939cd5-314c-41b9-a890-0abf6da6bb4b" name="ymdev_flussi" url="http://ym-dev.com/">
+        <fileTransfer host="lhcp1028.webapps.net" port="21" rootFolder="/flussi">
+          <advancedOptions>
+            <advancedOptions dataProtectionLevel="Private" passiveMode="true" shareSSLContext="true" />
+          </advancedOptions>
+          <option name="port" value="21" />
+        </fileTransfer>
+      </webServer>
+    </option>
+  </component>
+</project>

@@ -214,58 +214,57 @@ class Dashboard extends Controller {
 
 
 
-            // Lista Comuni Tribunali
-            $comuniModel = new Comuni_Model();
-            $comuniList = $comuniModel->getComuniList();
-            $arrComuniTribunale = array();
-            if (is_array($comuniList) || is_object($comuniList)) {
-                // Inserisci solo Comuni presenti nelle aste
-                if (is_array($arrAsteListAll) || is_object($arrAsteListAll)) {
-                    foreach ($comuniList as $comune) {
-                        foreach ( $arrAsteListAll as $asta ) {
-                            $arrItem = array(
-                                "nome"=>$comune["nome"],
-                                "siglaprovincia"=>$comune["siglaprovincia"],
-                                "codice_istat"=>$comune["codice_istat"],
-                                "id"=>$comune["id"]
-                            );
-                            if ($asta["codiceComuneTribunale"] == $functionsModel->ConvertCodiceIstat($comune["codice_istat"])) {
-                                array_push($arrComuniTribunale, $arrItem);
-                            }
+        } else {
+
+            // Num. Aste Esportate
+            $this->view->asteExportNum = $relAsAgModel->getCountByAgenziaStatus($this->view->userLogged["id"],"importato");
+
+            // Num. Esportazioni
+            $this->view->exportsNum = 0;
+        }
+
+        // Lista Comuni Tribunali
+        $comuniModel = new Comuni_Model();
+        $comuniList = $comuniModel->getComuniList();
+        $arrComuniTribunale = array();
+        if (is_array($comuniList) || is_object($comuniList)) {
+            // Inserisci solo Comuni presenti nelle aste
+            if (is_array($arrAsteList) || is_object($arrAsteList)) {
+                foreach ($comuniList as $comune) {
+                    foreach ( $arrAsteList as $asta ) {
+                        $arrItem = array(
+                            "nome"=>$comune["nome"],
+                            "siglaprovincia"=>$comune["siglaprovincia"],
+                            "codice_istat"=>$comune["codice_istat"],
+                            "id"=>$comune["id"]
+                        );
+                        if ($asta["codiceComuneTribunale"] == $functionsModel->ConvertCodiceIstat($comune["codice_istat"])) {
+                            array_push($arrComuniTribunale, $arrItem);
                         }
                     }
                 }
             }
-            $arrComuniTribunaleList = array();
-            if (sizeof($arrComuniTribunale)>0) {
-                $tempArr2 = array_unique(array_column($arrComuniTribunale, 'codice_istat'));
-                $arrComuniTribunaleList = array_intersect_key($arrComuniTribunale, $tempArr2);
-            }
-            $arrTrib = array();
-            if (sizeof($arrComuniTribunaleList)>0) {
-                // Num.Aste per Tribunale
-                foreach ($arrComuniTribunaleList as $tribunale   ) {
-                    $codiceTribunale = $functionsModel->ConvertCodiceIstat($tribunale["codice_istat"]);
-                    $numAste = $asteModel->getNumAsteFromTribunale($codiceTribunale);
-                    $arrItem = array(
-                        "nome"=>$tribunale["nome"],
-                        "siglaprovincia"=>$tribunale["siglaprovincia"],
-                        "numAste"=>$numAste
-                    );
-                    array_push($arrTrib, $arrItem);
-                }
-            }
-            $this->view->comuniTribunaliList = $arrTrib;
-
-        } else {
-
-            // Num. Aste Esportate
-            $this->view->asteExportNum = 0;
-
-            // Num.Esportazioni
-            $this->view->exportsNum = 0;
         }
-        
+        $arrComuniTribunaleList = array();
+        if (sizeof($arrComuniTribunale)>0) {
+            $tempArr2 = array_unique(array_column($arrComuniTribunale, 'codice_istat'));
+            $arrComuniTribunaleList = array_intersect_key($arrComuniTribunale, $tempArr2);
+        }
+        $arrTrib = array();
+        if (sizeof($arrComuniTribunaleList)>0) {
+            // Num.Aste per Tribunale
+            foreach ($arrComuniTribunaleList as $tribunale   ) {
+                $codiceTribunale = $functionsModel->ConvertCodiceIstat($tribunale["codice_istat"]);
+                $numAste = $asteModel->getNumAsteFromTribunale($codiceTribunale);
+                $arrItem = array(
+                    "nome"=>$tribunale["nome"],
+                    "siglaprovincia"=>$tribunale["siglaprovincia"],
+                    "numAste"=>$numAste
+                );
+                array_push($arrTrib, $arrItem);
+            }
+        }
+        $this->view->comuniTribunaliList = $arrTrib;
         
         // View
         $this->view->render('dashboard/index', true, HEADER_MAIN);

@@ -130,87 +130,8 @@
                         </div>
                     </div>
                 </div>
-
-
-
-
             </div>
 
-
-
-            <!--<div class="row">
-                <div class="col-md-3">
-                    <div class="ibox ">
-                        <div class="ibox-title text-center bg-flussi-dark">
-                            <h2 class=" text-center">
-                                AGENZIE
-                            </h2>
-                        </div>
-                        <div class="ibox-content text-center">
-                            <h1 class="no-margins">
-                                <?php /*echo $this->agencyNum; */?>
-                            </h1>
-                            <div class="text-center">
-                                <h1 class="text-flussi-light"><i class="fa fa-users" style="color:#6DC4E9;"></i></h1>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="ibox ">
-                        <div class="ibox-title text-center bg-flussi-dark">
-                            <h2 class=" text-center">
-                                ASTE
-                            </h2>
-                        </div>
-                        <div class="ibox-content text-center">
-                            <h1 class="no-margins">
-                                <?php /*echo $this->asteNum; */?>
-                            </h1>
-                            <div class="text-center">
-                                <h1 class="text-flussi-light"><i class="fa fa-home" style="color:#6DC4E9;"></i></h1>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-
-
-                <div class="col-md-3">
-                    <div class="ibox ">
-                        <div class="ibox-title text-center bg-flussi-dark">
-                            <h2 class=" text-center">
-                                IMPORTAZIONI
-                            </h2>
-                        </div>
-                        <div class="ibox-content text-center">
-                            <h1 class="no-margins">
-                                <?php /*echo $this->importsNum; */?>
-                            </h1>
-                            <div class="text-center">
-                                <h1 class="text-flussi-light"><i class="fa fa-upload" style="color:#6DC4E9;"></i></h1>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="ibox ">
-                        <div class="ibox-title text-center bg-flussi-dark">
-                            <h2 class=" text-center">
-                                ESPORTAZIONI
-                            </h2>
-                        </div>
-                        <div class="ibox-content text-center">
-                            <h1 class="no-margins">
-                                <?php /*echo $this->exportsNum; */?>
-                            </h1>
-                            <div class="text-center">
-                                <h1 class="text-flussi-light"><i class="fa fa-download" style="color:#6DC4E9;"></i></h1>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>-->
             <div class="row">
                 <div class="col-lg-12">
                     <div class="ibox ">
@@ -378,20 +299,72 @@
                         </div>
                     </div>
                 </div>
+<!--                <div class="col-md-4">-->
+<!--                    <div class="ibox ">-->
+<!--                        <div class="ibox-title text-center bg-flussi-dark">-->
+<!--                            <h2 class=" text-center">-->
+<!--                                ESPORTAZIONI-->
+<!--                            </h2>-->
+<!--                        </div>-->
+<!--                        <div class="ibox-content text-center">-->
+<!--                            <h1 class="no-margins">-->
+<!--                                --><?php //echo $this->exportsNum; ?>
+<!--                            </h1>-->
+<!--                            <div class="text-center">-->
+<!--                                <h1 class="text-flussi-light"><i class="fa fa-download" style="color:#6DC4E9;"></i></h1>-->
+<!--                            </div>-->
+<!--                        </div>-->
+<!--                    </div>-->
+<!--                </div>-->
                 <div class="col-md-4">
-                    <div class="ibox ">
+                    <div class="ibox " style="height:100%;">
                         <div class="ibox-title text-center bg-flussi-dark">
                             <h2 class=" text-center">
-                                ESPORTAZIONI
+                                Sintesi per Tribunale
                             </h2>
                         </div>
                         <div class="ibox-content text-center">
-                            <h1 class="no-margins">
-                                <?php echo $this->exportsNum; ?>
-                            </h1>
-                            <div class="text-center">
-                                <h1 class="text-flussi-light"><i class="fa fa-download" style="color:#6DC4E9;"></i></h1>
-                            </div>
+                            <?php
+                            if (sizeof($this->comuniTribunaliList)==0){
+                                ?>
+                                <p class="text-center alert alert-info">Non ci sono dati</p>
+                                <?php
+                            } else {
+                                ?>
+                                <div class="table-responsive">
+                                    <table class="footable table table-stripped toggle-arrow-tiny"
+                                           data-filter="#filter" data-limit-navigation="2">
+                                        <thead>
+                                        <tr class="bg-flussi-light">
+                                            <th>Tribunale</th>
+                                            <th class="text-center" data-type="numeric">Num. Aste</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <?php
+                                        foreach ($this->comuniTribunaliList as $item   ) {
+                                            ?>
+                                            <tr>
+                                                <td><?php echo $item["nome"]." (".$item["siglaprovincia"].")" ?></td>
+                                                <td class="text-center" data-value="<?php echo $item["numAste"] ?>"><?php echo $item["numAste"] ?></td>
+                                            </tr>
+                                            <?php
+                                        }
+                                        ?>
+                                        </tbody>
+                                        <tfoot>
+                                        <tr>
+                                            <td colspan="2">
+                                                <ul class="pagination float-right"></ul>
+                                            </td>
+                                        </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                                <?Php
+                            }
+                            ?>
+
                         </div>
                     </div>
                 </div>

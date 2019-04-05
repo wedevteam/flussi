@@ -241,12 +241,13 @@ class Exports extends Controller {
         $arrRelAgPrefList = $relAgPrefModel->getRelAgenziePrefList(Null, Null, Null);
         // Aste
         $asteModel = new Aste_Model();
-        $arrAsteListAll = $asteModel->getAsteList(Null, Null); 
+        $arrAsteListAll = $asteModel->getAsteList(Null, Null);
+        $today = date("Y-m-d");
         $arrAsteList = array();
         if (is_array($arrAsteListAll) || is_object($arrAsteListAll)) {
             foreach ($arrAgencyList as $agency) { 
                 foreach($arrAsteListAll as $asta) {
-                    if ($asta["status"]=="on") {
+                    if ($asta["status"]=="on" && $asta["dataAsta"]>$today) {
                         $trovato = true;
                         
                         // -------------------------------------------->>> Set PREZZO e Valori IMMOBILE in base a Preferenze Admin o Agenzia
@@ -473,11 +474,17 @@ class Exports extends Controller {
         //$ftp_server = "feed.immobiliarefull.com";
         $ftp_conn = ftp_connect($ftpHost) or die("Errore di connessione con il Server Immobiliare.it");
         $login = ftp_login($ftp_conn, $ftpUser, $ftpPw);
-        
-        $file_xml_ag = 'xml/agenzie.xml';
-        $file_xml_imm = 'xml/immobili.xml';
+
+        // DEV ==========================================
+        $file_xml_ag = 'xml/agenzieTEST.xml';
+        $file_xml_imm = 'xml/immobiliTEST.xml';
+        // PROD  ==========================================
+        // $file_xml_ag = 'xml/agenzie.xml';
+        // $file_xml_imm = 'xml/immobili.xml';
+
+
         // INVIO
-        if (ftp_put($ftp_conn, '/agenzie.xml', $file_xml_ag, FTP_ASCII) && ftp_put($ftp_conn, '/immobili.xml', $file_xml_imm, FTP_ASCII)) {
+        if (ftp_put($ftp_conn, '/agenzieTEST.xml', $file_xml_ag, FTP_ASCII) && ftp_put($ftp_conn, '/immobiliTEST.xml', $file_xml_imm, FTP_ASCII)) {
             // INVIO OK: Update Status Esportazione
             
             // close connection
@@ -548,7 +555,9 @@ class Exports extends Controller {
     // CREA FILE XML:: AGENZIE
     function createXMLfile_Agenzie($arrAgencyList,$IDGestionale){ 
         // Sets
-        $filePath_Agenzia 	= 'xml/agenzie.xml';
+        // $filePath_Agenzia 	= 'xml/agenzie.xml';
+        $filePath_Agenzia 	= 'xml/agenzieTEST.xml';
+
         $dom_Agenzia     	= new DOMDocument('1.0', 'utf-8'); 
         $root_Agenzia      	= $dom_Agenzia->createElement('agenzie'); 
         
@@ -660,7 +669,10 @@ class Exports extends Controller {
     //FUNZIONE CREA FILE XML (IMMOBILI)
     function createXMLfile_Immobili($arrAsteList, $IDGestionale){
         // Sets
-        $filePath_Immobili  = 'xml/immobili.xml';
+        // $filePath_Immobili  = 'xml/immobili.xml';
+        $filePath_Immobili  = 'xml/immobiliTEST.xml';
+
+
         $dom_Immobili       = new DOMDocument('1.0', 'utf-8'); 
         $root_Immobili      = $dom_Immobili->createElement('Immobili');
 

@@ -22,6 +22,7 @@ define('TAB_COMUNI', 'comuni');
 define('TAB_USERS', 'users');
 
 define('TAB_ASTE', 'aste');
+define('TAB_REL_ASTE_IMG', 'rel_aste_img');
 
 define('TAB_REL_ASTE_AGENZIE', 'rel_aste_agenzie');
 define('TAB_REL_AGENZIE_PREF', 'rel_agenzie_pref');

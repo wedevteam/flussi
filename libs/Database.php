@@ -24,15 +24,15 @@ class Database extends PDO {
             if ( $sth->execute($data) ) {
                 return true;
             } else {
-                //echo "err"; print_r($sth->errorInfo());exit;
-//                if ($table==TAB_EXPORT_DETAILS) {
-//                    echo "err"; print_r($sth->errorInfo());exit;
+//                echo "err"; print_r($sth->errorInfo());exit;
+//                if ($table==TAB_ASTE) {
+//                    echo "<br>err"; print_r($sth->errorInfo());
 //                }
                 return false;
             }
         } catch (PDOException $e) {
             //echo '<br>KO'.$e->getMessage();exit;
-            handle_sql_errors($selectQuery, $e->getMessage());
+            handle_sql_errors($sql, $e->getMessage());
         }
     }
 

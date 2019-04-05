@@ -14,6 +14,7 @@ require 'Models/comuni_model.php';
 require 'Models/dbcucine_model.php';
 require 'Models/dbstrade_model.php';
 require 'Models/importdetails_model.php';
+require 'Models/relasteimg_model.php';
 
 class Aste extends Controller {
 
@@ -314,6 +315,16 @@ class Aste extends Controller {
             $this->view->relAsteAgenzia = $relAsteAgModel->getDataFromIdAgIdAsta($this->view->userLogged["id"], $_GET["iditem"]);
         }
         $this->view->Coordinate = "Ok";
+
+        // Leggi Img Aggiuntive rispetto alla prima
+        $relImgModel = new RelAsteImg_Model();
+        if ($this->view->userLogged["role"]=="admin") {
+            $arrImg = $relImgModel->getRelAsteImgList($_GET["iditem"],null,$this->view->userLogged["role"]);
+        } else {
+            $arrImg = $relImgModel->getRelAsteImgList($_GET["iditem"],$this->view->userLogged["id"],$this->view->userLogged["role"]);
+        }
+        $this->view->relImg = $arrImg;
+
         
         // View
         $this->view->render('aste/overview', true, HEADER_MAIN);
@@ -385,8 +396,8 @@ class Aste extends Controller {
                 $this->edit(ER_ASTA_EDIT_ORAVISIONE);
                 return false;
             }
-            echo $dataRichiestaVisione = substr($_POST['dataRichiestaVisione'],6,4)."-".substr($_POST['dataRichiestaVisione'],3,2)."-".substr($_POST['dataRichiestaVisione'],0,2) ;
-            echo $oraRichiestaVisione = $_POST['oraRichiestaVisione'].":00";
+            $dataRichiestaVisione = substr($_POST['dataRichiestaVisione'],6,4)."-".substr($_POST['dataRichiestaVisione'],3,2)."-".substr($_POST['dataRichiestaVisione'],0,2) ;
+            $oraRichiestaVisione = $_POST['oraRichiestaVisione'].":00";
         }
 
         // Verifica se Prima era in visione e se lo era, se la data/ora erano diverse
@@ -441,8 +452,8 @@ class Aste extends Controller {
                 $dtstart= GMDATE("Ymd\THis\Z",$meetingstamp);
                 $dtend= GMDATE("Ymd\THis\Z",$meetingstamp+$meeting_duration);
                 $todaystamp = GMDATE("Ymd\THis\Z");
-                $meeting_location = $this->view->data["CodiceComune"]." - ".$this->view->data["Indirizzo"];
-                $meeting_description = "Visione Asta riferimento: ".$this->view->data["rge"]."/".$this->view->data["lotto"];
+                $meeting_location = $this->view->data["ComuneProvinciaCompleto"]." - ".$this->view->data["Strada_testo"]." ".$this->view->data["Indirizzo"]." ".$this->view->data["Civico"];
+                $meeting_description = "VISIONE ".$meeting_location;
 
                 //Create unique identifier
                 $cal_uid = DATE('Ymd').'T'.DATE('His')."-".RAND()."@ym-dev.com";
@@ -451,8 +462,8 @@ class Aste extends Controller {
                 $mime_boundary = "----Meeting Booking----".MD5(TIME());
 
                 // Predisponi INVIO
-                $to      = "pamela.palazzini@gmail.com"; // $this->view->userLogged["email"];
-                $subject = 'Appuntamento Visione Asta | '.$this->view->platformData["siteName"];
+                $to      = $this->view->userLogged["email"]; // "support@wedevteam.com";
+                $subject = 'Appuntamento VISIONE | '.$this->view->platformData["siteName"];
                 include ('public/template/utente_apptoasta.php');
                 $headers = "From: ".$this->view->platformData["emailFromDesc"]." <".$this->view->platformData["emailFrom"].">". "\r\n";
                 $headers .= "MIME-Version: 1.0\r\n";
@@ -469,7 +480,7 @@ class Aste extends Controller {
                 $message .= "<html>\n";
                 $message .= "<body>\n";
                 $message .= '<p>Gentile Agenzia,</p>';
-                $message .= '<p>'.$this->view->platformData["siteName"]." ti invia appuntamento per la Visione dell'Immobile all'Asta.</p>";
+                $message .= '<p>'.$this->view->platformData["siteName"]." ti invia appuntamento per la Visione dell'Immobile all'Asta di </p>".$meeting_location;
                 $message .= "</body>\n";
                 $message .= "</html>\n";
                 $message .= "--$mime_boundary\n";
@@ -500,9 +511,9 @@ class Aste extends Controller {
 
 
                 //Invia email
-
                 if (!$funcionsModel->sendEmailWithResult ($to, $subject, $message, $headers) ){
-                    echo "Err invio email";exit;
+                    $this->edit(ER_ASTA_INVIOMAIL_VISIONE,null);
+                    return false;
                 }
             }
             
@@ -514,6 +525,172 @@ class Aste extends Controller {
             return false;
         }
     }
+    // POST: ABILITA RICEZIONE APP.TO ASTA e INVIO EMAIL    (SOLO AGENZIA)
+    public function setNotyOn() {
+        // Check
+        if ($this->view->userLogged["role"]=="admin") {
+            Session::destroy();
+            $this->func->redirectToAction("login/index");
+            exit;
+        }
+        // Checks
+        if (!$this->CheckIdItemExists($_GET["iditem"])) {
+            $this->edit(ER_ASTA_EDIT_GENERIC);
+            return false;
+        }// Get Data
+        $this->view->data = $this->model->getDataFromId($_GET["iditem"]);
+        $relAsteAgModel = new RelAsteAgenzie_Model();
+        // Get Record RelAsteAgenzie
+        // Checks
+        if (!$this->CheckIdItemExistsRel($this->view->userLogged["id"], $_GET["iditem"])) {
+            $this->edit(ER_ASTA_EDIT_GENERIC);
+            return false;
+        }
+        $this->view->relAsteAgenzia = $relAsteAgModel->getDataFromIdAgIdAsta($this->view->userLogged["id"], $_GET["idrel"]);
+
+        // Set values
+        $data = array(
+            ':isNoty' => "on"
+        );
+        $where = ' id=:id  ';
+        $parameters = array(
+            ':id' => $_GET["idrel"]
+        );
+
+
+        // Update
+        if ($relAsteAgModel->updateData($data,$parameters,$where)) {
+
+            // Invio App.to Email
+
+            $funcionsModel = new Functions();
+
+            // Predisponi dati per Email//Convert MYSQL datetime and construct iCal start, end and issue dates
+            $meeting_date = $this->view->data["dataAsta"]." 10:00:00";
+            $meeting_duration = 3600; // 1h
+            $meetingstamp = STRTOTIME($meeting_date . " UTC");
+            $dtstart= GMDATE("Ymd\THis\Z",$meetingstamp);
+            $dtend= GMDATE("Ymd\THis\Z",$meetingstamp+$meeting_duration);
+            $todaystamp = GMDATE("Ymd\THis\Z");
+            $meeting_location = $this->view->data["ComuneProvinciaCompleto"]." - ".$this->view->data["Strada_testo"]." ".$this->view->data["Indirizzo"]." ".$this->view->data["Civico"];
+            $meeting_description = "ASTA ".$meeting_location;
+
+            //Create unique identifier
+            $cal_uid = DATE('Ymd').'T'.DATE('His')."-".RAND()."@ym-dev.com";
+
+            //Create Mime Boundry
+            $mime_boundary = "----Meeting Booking----".MD5(TIME());
+
+            // Predisponi INVIO
+            $to      = $this->view->userLogged["email"];  // "pamela.palazzini@wedevteam.com";
+            $subject = 'Appuntamento ASTA | '.$this->view->platformData["siteName"];
+            include ('public/template/utente_apptoasta.php');
+            $headers = "From: ".$this->view->platformData["emailFromDesc"]." <".$this->view->platformData["emailFrom"].">". "\r\n";
+            $headers .= "MIME-Version: 1.0\r\n";
+            // $headers .= "Content-type: text/html; charset=UTF-8";
+            $headers .= "Content-Type: multipart/alternative; boundary=\"$mime_boundary\"\n";
+            $headers .= "Content-class: urn:content-classes:calendarmessage\n";
+
+            //Create Email Body (HTML)
+            $message = "";
+            $message .= "--$mime_boundary\n";
+            $message .= "Content-Type: text/html; charset=UTF-8\n";
+            $message .= "Content-Transfer-Encoding: 8bit\n\n";
+
+            $message .= "<html>\n";
+            $message .= "<body>\n";
+            $message .= '<p>Gentile Agenzia,</p>';
+            $message .= '<p>'.$this->view->platformData["siteName"]." ti invia appuntamento della data dell'Asta dell'Immobile di </p>".$meeting_location;
+            $message .= "</body>\n";
+            $message .= "</html>\n";
+            $message .= "--$mime_boundary\n";
+
+            //Create ICAL Content (Google rfc 2445 for details and examples of usage)
+            $ical =    'BEGIN:VCALENDAR
+                PRODID:-//Microsoft Corporation//Outlook 11.0 MIMEDIR//EN
+                VERSION:2.0
+                METHOD:PUBLISH
+                BEGIN:VEVENT
+                ORGANIZER:MAILTO:'.$this->view->platformData["emailFrom"].'
+                DTSTART:'.$dtstart.'
+                DTEND:'.$dtend.'
+                LOCATION:'.$meeting_location.'
+                TRANSP:OPAQUE
+                SEQUENCE:0
+                UID:'.$cal_uid.'
+                DTSTAMP:'.$todaystamp.'
+                DESCRIPTION:'.$meeting_description.'
+                SUMMARY:'.$subject.'
+                PRIORITY:5
+                CLASS:PUBLIC
+                END:VEVENT
+                END:VCALENDAR';
+            $message .= 'Content-Type: text/calendar;name="meeting.ics";method=REQUEST\n';
+            $message .= "Content-Transfer-Encoding: 8bit\n\n";
+            $message .= $ical;
+
+
+            //Invia email
+            if (!$funcionsModel->sendEmailWithResult ($to, $subject, $message, $headers) ){
+                $this->edit(ER_ASTA_INVIOMAIL_VISIONE,null);
+                return false;
+            }
+
+
+
+            // View
+            $this->edit(null,MESS_MODIFICHE_SALVATE);
+        } else {
+            $this->edit(ER_GENERICO,null);
+            return false;
+        }
+    }
+    // POST: DISABILITA RICEZIONE APP.TO ASTA   (SOLO AGENZIA)
+    public function setNotyOff() {
+        // Check
+        if ($this->view->userLogged["role"]=="admin") {
+            Session::destroy();
+            $this->func->redirectToAction("login/index");
+            exit;
+        }
+        // Checks
+        if (!$this->CheckIdItemExists($_GET["iditem"])) {
+            $this->edit(ER_ASTA_EDIT_GENERIC);
+            return false;
+        }// Get Data
+        $this->view->data = $this->model->getDataFromId($_GET["iditem"]);
+        $relAsteAgModel = new RelAsteAgenzie_Model();
+        // Get Record RelAsteAgenzie
+        // Checks
+        if (!$this->CheckIdItemExistsRel($this->view->userLogged["id"], $_GET["iditem"])) {
+            $this->edit(ER_ASTA_EDIT_GENERIC);
+            return false;
+        }
+        $this->view->relAsteAgenzia = $relAsteAgModel->getDataFromIdAgIdAsta($this->view->userLogged["id"], $_GET["idrel"]);
+
+        // Set values
+        $data = array(
+            ':isNoty' => "off"
+        );
+        $where = ' id=:id  ';
+        $parameters = array(
+            ':id' => $_GET["idrel"]
+        );
+
+
+        // Update
+        if ($relAsteAgModel->updateData($data,$parameters,$where)) {
+            // View
+            $this->edit(null,MESS_MODIFICHE_SALVATE);
+        } else {
+            $this->edit(ER_GENERICO,null);
+            return false;
+        }
+    }
+
+
+
+
     // POST: Execut EDIT (SOLO ADMIN)
     public function executeEditA() {
         // Check

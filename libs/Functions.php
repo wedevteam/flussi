@@ -203,6 +203,9 @@ class Functions extends Model {
             case ER_ASTA_EDIT_ORAVISIONE:
                 return ER_ASTA_EDIT_ORAVISIONE_TEXT;
                 break;
+            case ER_ASTA_INVIOMAIL_VISIONE:
+                return ER_ASTA_INVIOMAIL_VISIONE_TEXT;
+                break;
                 
                 
 

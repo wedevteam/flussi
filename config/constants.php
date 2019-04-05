@@ -94,6 +94,8 @@ define ('ER_UPLOADFILE_PROBLEMAUPLOAD',75);
 define ('ER_UPLOADFILE_PROBLEMAUPLOAD_TEXT',"Problemi durante l'upload del File. Riprova.");
 define ('ER_ASTA_EDIT_ORAVISIONE',76);
 define ('ER_ASTA_EDIT_ORAVISIONE_TEXT',"Inserire l'Ora di richiesta visione.");
+define ('ER_ASTA_INVIOMAIL_VISIONE',77);
+define ('ER_ASTA_INVIOMAIL_VISIONE_TEXT',"Errore durante l'invio dell'Email dell'Appuntamento.");
 
 
 

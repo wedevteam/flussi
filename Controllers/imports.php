@@ -16,6 +16,7 @@ require 'Models/dbcucine_model.php';
 require 'Models/dbstrade_model.php';
 require 'Models/importdetails_model.php';
 require 'Models/relasteagenzie_model.php';
+require 'Models/relasteimg_model.php';
 
 
 class Imports extends Controller {
@@ -294,7 +295,7 @@ class Imports extends Controller {
                     $Indirizzo_completo = $this->sostituisci_carattere($a,$b,$numero,$row[23]);
                     $Indirizzo_completo = $this->sanitizeXML($Indirizzo_completo);
                     $nuovoImmobile->IndirizzoCompleto = $Indirizzo_completo;
-                    
+
                     $stringa_dacercare = ",";
                     $lastPos = 0;
                     $positions = array();
@@ -304,6 +305,8 @@ class Imports extends Controller {
                         $lastPos = $lastPos + strlen($stringa_dacercare);
                         ++$indice_virgola; //(N.Ricorrenze virgola)
                     }
+
+                    // echo '<br>stringa da cercare'.$indice_virgola;
                     if ($indice_virgola==0) {
                         $nuovoImmobile->Indirizzo = $Indirizzo_completo;
                         $nuovoImmobile->PubblicaCivico = "false";
@@ -331,6 +334,9 @@ class Imports extends Controller {
                     $nuovoImmobile->status = "error";
                     $nuovoImmobile->uploadErrorsTxt .= "Indirizzo non valido. ";
                 }
+
+
+
                 // ====================================================== STRADA (//Trova Strada (via, piazza etc.) e confrontala con stringhe in Tab.db_strade)
                 $nuovoImmobile->Strada = 0;
                 $nuovoImmobile->Strada_testo = "";
@@ -349,7 +355,11 @@ class Imports extends Controller {
                         }
                     }
                 }
-                
+//                echo '<br>Strada_testo:'.$nuovoImmobile->Strada_testo;
+//                echo '<br>indirizzo2:'.$nuovoImmobile->Indirizzo;
+//                exit;
+
+
                 $nuovoImmobile->importoBaseAsta = 0;
                 if (isset($row[16]) && trim($row[16]) != '') {
                     $nuovoImmobile->importoBaseAsta = str_replace(",",".",$row[16]);
@@ -788,7 +798,26 @@ class Imports extends Controller {
                 } else {
                    $nuovoImmobile->immagine_URL = "http://www.flussiaste.com/flussi/public/uploads/flussiaste-default.png";
                 }
-                
+
+
+                // ======================================================IMMAGINI
+                $nuovoImmobile->immagine_URL = "http://www.flussiaste.com/flussi/public/uploads/flussiaste-default.png";
+                $nuovoImmobile->IDImmagine = 1;
+                $nuovoImmobile->immagine_DataModifica = substr($nuovoImmobile->DataInserimento_d,0,10).'T'.substr($nuovoImmobile->DataInserimento_d,11,19);
+                if (isset($row[69]) && trim($row[69]) != '') {
+                    $arrImg = array();
+                    $arrImg = explode("~", $row[69]);
+                    $indiceImg = 0;
+                    foreach ($arrImg as $img ){
+                        if (isset($img) && trim($img) != '' && substr(trim($img),0,4)=="http" ) {
+                            ++$indiceImg;
+                            if ($indiceImg==1) {
+                                $nuovoImmobile->immagine_URL = $img;
+                            }
+                        }
+                    }
+                }
+
                 
                  // ======================================================ALTRI BENI
                 $nuovoImmobile->altriBeni1 = "";  
@@ -1023,7 +1052,7 @@ class Imports extends Controller {
                                     // ':Arredamento' => $nuovoImmobile->Arredamento, (default: 255 - assente)
                                     // ':StatoArredamento' => $nuovoImmobile->StatoArredamento, (default: 4 - buono)
                                     // ':AnnoCostruzione' => $nuovoImmobile->AnnoCostruzione, (default: 0)
-                                    ':TipoCostruzione' => $nuovoImmobile->TipoCostruzione, // (default: 3 - Medio Signorile)
+                                    ':TipoCostruzione' => 3, // $nuovoImmobile->TipoCostruzione, // (default: 3 - Medio Signorile)
                                     // ':StatoCostruzione' => $nuovoImmobile->StatoCostruzione, (default: 4 - buono)
                                     ':Allarme' => $nuovoImmobile->Allarme,
                                     ':Piscina' => $nuovoImmobile->Piscina,
@@ -1033,7 +1062,7 @@ class Imports extends Controller {
                                     ':VideoCitofono' => $nuovoImmobile->VideoCitofono,
                                     ':FibraOttica' => $nuovoImmobile->FibraOttica,
                                     ':ClasseEnergetica' => $nuovoImmobile->ClasseEnergetica, // (di default G)
-                                    ':IndicePrestazioneEnergetica' => $nuovoImmobile->IndicePrestazioneEnergetica, // (default: 0)
+                                    ':IndicePrestazioneEnergetica' => 0,// $nuovoImmobile->IndicePrestazioneEnergetica, // (default: 0)
                                     // ':EsenteClasseEnergetica' => $nuovoImmobile->EsenteClasseEnergetica, (default: 0)
                                     // ':Energia' => $nuovoImmobile->Energia,  (default: "")
                                     ':IDImmagine' => $nuovoImmobile->IDImmagine,
@@ -1054,11 +1083,12 @@ class Imports extends Controller {
                                     ':altriBeni7' => $nuovoImmobile->altriBeni7
                                 );
                                 
-                                // INSERT IMPORT DETAIL
+                                // INSERT ASTA
                                 $astaModel = new Aste_Model();
                                 $idRecord = $astaModel->create($data);
-                                
-                                // Inserisci Nuova IMPORT DETAIL
+                                // echo '<br>idRecord'.$idRecord;
+
+                                // Inserisci IMPORT DETAIL
                                 $data2 = array(
                                     ':idImport' => $nuovoImmobile->idImport,
                                     ':idAsta' => $idRecord,
@@ -1109,10 +1139,41 @@ class Imports extends Controller {
                                         $idRel = $relModel->create($data3);
                                     }
                                 }
-                                
-                                // ==================================== 
+                                // ====================================
+
+
+                                // ==================================== INSERT IMMAGINI
+                                if (isset($row[69]) && trim($row[69]) != '') {
+                                    $arrImg = array();
+                                    $arrImg = explode("~", $row[69]);
+                                    $indiceImg = 0;
+                                    foreach ($arrImg as $img ){
+                                        if (isset($img) && trim($img) != '' && substr(trim($img),0,4)=="http" ) {
+                                            ++$indiceImg ;
+                                            $dataModifica = date("Y-m-d H:i:s");
+                                            $data3 = array(
+                                                ':idAsta' => $idRecord,
+                                                ':idAgenzia' => 0,
+                                                ':fonte' => "csv",
+                                                ':IDImmagine' => $indiceImg,
+                                                ':immagine_URL' => $img,
+                                                ':immagine_Posizione' => $indiceImg-1,
+                                                ':immagine_TipoFoto' => "F",
+                                                ':immagine_Titolo' => "",
+                                                ':dataModifica_d' => $dataModifica,
+                                                ':dataModifica' => substr($dataModifica,0,10).'T'.substr($dataModifica,11,19)
+                                            );
+
+                                            // Add
+                                            $relImgModel = new RelAsteImg_Model();
+                                            $idRecordImg = $relImgModel->create($data3);
+                                        }
+                                    }
+                                }
+                                // ====================================
                             }
                         } else {
+                            // UPDATE IMMOBILE GIA' PRESENTE
                             // Set Data
                             $data = array(
                                 ':idImport' => $nuovoImmobile->idImport,
@@ -1128,71 +1189,76 @@ class Imports extends Controller {
                                 ':datiCatastali' => $nuovoImmobile->datiCatastali,
                                 ':importoBaseAsta' => $nuovoImmobile->importoBaseAsta,
                                 ':importoOffertaMinima' => $nuovoImmobile->importoOffertaMinima,
-                                ':noteAggiuntive' => $nuovoImmobile->noteAggiuntive,
+                                // ':noteAggiuntive' => $nuovoImmobile->noteAggiuntive,
                                 ':dataAsta' => $nuovoImmobile->dataAsta,
                                 ':linkAllegati' => $nuovoImmobile->linkAllegati,
-                                ':NrLocali' => $nuovoImmobile->NrLocali,
-                                ':MQSuperficie' => $nuovoImmobile->MQSuperficie,
-                                ':SpeseMensili' => $nuovoImmobile->SpeseMensili,
-                                ':URLPlanimetria' => $nuovoImmobile->URLPlanimetria,
-                                ':URLVirtualTour' => $nuovoImmobile->URLVirtualTour,
-                                ':URLVideo' => $nuovoImmobile->URLVideo,
+                                // ':NrLocali' => $nuovoImmobile->NrLocali,
+                                // ':MQSuperficie' => $nuovoImmobile->MQSuperficie,
+                                // ':SpeseMensili' => $nuovoImmobile->SpeseMensili,
+                                //':URLPlanimetria' => $nuovoImmobile->URLPlanimetria,
+                                //':URLVirtualTour' => $nuovoImmobile->URLVirtualTour,
+                                //':URLVideo' => $nuovoImmobile->URLVideo,
                                 ':DataModifica' => $nuovoImmobile->DataModifica,
                                 ':DataModifica_d' => $nuovoImmobile->DataModifica_d,
-                                ':ClasseCatastale' => $nuovoImmobile->ClasseCatastale,
-                                ':RenditaCatastale' => $nuovoImmobile->RenditaCatastale,
-                                ':Titolo' => $nuovoImmobile->Titolo,
-                                ':Testo' => $nuovoImmobile->Testo,
-                                ':TestoBreve' => $nuovoImmobile->TestoBreve,
-                                ':Piano' => $nuovoImmobile->Piano,
-                                ':PianoFuoriTerra' => $nuovoImmobile->PianoFuoriTerra,
-                                ':PianiEdificio' => $nuovoImmobile->PianiEdificio,
-                                ':NrCamereLetto' => $nuovoImmobile->NrCamereLetto,
-                                ':NrAltreCamere' => $nuovoImmobile->NrAltreCamere,
-                                ':NrBagni' => $nuovoImmobile->NrBagni,
-                                ':Cucina' => $nuovoImmobile->Cucina,
-                                ':NrTerrazzi' => $nuovoImmobile->NrTerrazzi,
-                                ':NrBalconi' => $nuovoImmobile->NrBalconi,
-                                ':Ascensore' => $nuovoImmobile->Ascensore,
-                                ':NrAscensori' => $nuovoImmobile->NrAscensori,
-                                ':BoxAuto' => $nuovoImmobile->BoxAuto,
-                                ':BoxIncluso' => $nuovoImmobile->BoxIncluso,
-                                ':NrBox' => $nuovoImmobile->NrBox,
-                                ':NrPostiAuto' => $nuovoImmobile->NrPostiAuto,
-                                ':Cantina' => $nuovoImmobile->Cantina,
-                                ':Portineria' => $nuovoImmobile->Portineria,
-                                ':GiardinoCondominiale' => $nuovoImmobile->GiardinoCondominiale,
-                                ':GiardinoPrivato' => $nuovoImmobile->GiardinoPrivato,
-                                ':AriaCondizionata' => $nuovoImmobile->AriaCondizionata,
-                                ':Riscaldamento' => $nuovoImmobile->Riscaldamento,
-                                ':TipoImpiantoRiscaldamento' => $nuovoImmobile->TipoImpiantoRiscaldamento,
-                                ':TipoRiscaldamento' => $nuovoImmobile->TipoRiscaldamento,
-                                ':SpeseRiscaldamento' => $nuovoImmobile->SpeseRiscaldamento,
-                                ':Allarme' => $nuovoImmobile->Allarme,
-                                ':Piscina' => $nuovoImmobile->Piscina,
-                                ':Tennis' => $nuovoImmobile->Tennis,
-                                ':Caminetto' => $nuovoImmobile->Caminetto,
-                                ':Idromassaggio' => $nuovoImmobile->Idromassaggio,
-                                ':VideoCitofono' => $nuovoImmobile->VideoCitofono,
-                                ':FibraOttica' => $nuovoImmobile->FibraOttica,
-                                ':ClasseEnergetica' => $nuovoImmobile->ClasseEnergetica,
-                                ':IDImmagine' => $nuovoImmobile->IDImmagine,
-                                ':immagine_URL' => $nuovoImmobile->immagine_URL,
-                                ':immagine_DataModifica' => $nuovoImmobile->immagine_DataModifica,
+                                // ':ClasseCatastale' => $nuovoImmobile->ClasseCatastale,
+                                // ':RenditaCatastale' => $nuovoImmobile->RenditaCatastale,
+                                //':Titolo' => $nuovoImmobile->Titolo,
+                                //':Testo' => $nuovoImmobile->Testo,
+                                //':TestoBreve' => $nuovoImmobile->TestoBreve,
+                                // ':Piano' => $nuovoImmobile->Piano,
+                                // ':PianoFuoriTerra' => $nuovoImmobile->PianoFuoriTerra,
+                                // ':PianiEdificio' => $nuovoImmobile->PianiEdificio,
+                                // ':NrCamereLetto' => $nuovoImmobile->NrCamereLetto,
+                                // ':NrAltreCamere' => $nuovoImmobile->NrAltreCamere,
+                                // ':NrBagni' => $nuovoImmobile->NrBagni,
+                                // ':Cucina' => $nuovoImmobile->Cucina,
+                                // ':NrTerrazzi' => $nuovoImmobile->NrTerrazzi,
+                                // ':NrBalconi' => $nuovoImmobile->NrBalconi,
+                                // ':Ascensore' => $nuovoImmobile->Ascensore,
+                                // ':NrAscensori' => $nuovoImmobile->NrAscensori,
+                                // ':BoxAuto' => $nuovoImmobile->BoxAuto,
+                                // ':BoxIncluso' => $nuovoImmobile->BoxIncluso,
+                                // ':NrBox' => $nuovoImmobile->NrBox,
+                                // ':NrPostiAuto' => $nuovoImmobile->NrPostiAuto,
+                                // ':Cantina' => $nuovoImmobile->Cantina,
+                                // ':Portineria' => $nuovoImmobile->Portineria,
+                                // ':GiardinoCondominiale' => $nuovoImmobile->GiardinoCondominiale,
+                                // ':GiardinoPrivato' => $nuovoImmobile->GiardinoPrivato,
+                                // ':AriaCondizionata' => $nuovoImmobile->AriaCondizionata,
+                                // ':Riscaldamento' => $nuovoImmobile->Riscaldamento,
+                                // ':TipoImpiantoRiscaldamento' => $nuovoImmobile->TipoImpiantoRiscaldamento,
+                                // ':TipoRiscaldamento' => $nuovoImmobile->TipoRiscaldamento,
+                                // ':SpeseRiscaldamento' => $nuovoImmobile->SpeseRiscaldamento,
+                                // ':Allarme' => $nuovoImmobile->Allarme,
+                                // ':Piscina' => $nuovoImmobile->Piscina,
+                                // ':Tennis' => $nuovoImmobile->Tennis,
+                                // ':Caminetto' => $nuovoImmobile->Caminetto,
+                                // ':Idromassaggio' => $nuovoImmobile->Idromassaggio,
+                                // ':VideoCitofono' => $nuovoImmobile->VideoCitofono,
+                                // ':FibraOttica' => $nuovoImmobile->FibraOttica,
+                                // ':ClasseEnergetica' => $nuovoImmobile->ClasseEnergetica,
+                                //':IDImmagine' => $nuovoImmobile->IDImmagine,
+                                //':immagine_URL' => $nuovoImmobile->immagine_URL,
+                                //':immagine_DataModifica' => $nuovoImmobile->immagine_DataModifica,
                                 ':status' => $nuovoImmobile->status,
-                                ':altriBeni1' => $nuovoImmobile->altriBeni1,
-                                ':altriBeni2' => $nuovoImmobile->altriBeni2,
-                                ':altriBeni3' => $nuovoImmobile->altriBeni3,
-                                ':altriBeni4' => $nuovoImmobile->altriBeni4,
-                                ':altriBeni5' => $nuovoImmobile->altriBeni5,
-                                ':altriBeni6' => $nuovoImmobile->altriBeni6,
-                                ':altriBeni7' => $nuovoImmobile->altriBeni7
+                                //':altriBeni1' => $nuovoImmobile->altriBeni1,
+                                //':altriBeni2' => $nuovoImmobile->altriBeni2,
+                                //':altriBeni3' => $nuovoImmobile->altriBeni3,
+                                //':altriBeni4' => $nuovoImmobile->altriBeni4,
+                                //':altriBeni5' => $nuovoImmobile->altriBeni5,
+                                //':altriBeni6' => $nuovoImmobile->altriBeni6,
+                                //':altriBeni7' => $nuovoImmobile->altriBeni7
                             );
                             $where = " id=:id ";
                             $parameters[":id"] = $nuovoImmobile->id;
-                            // UPDATE
-                            $astaModel = new Aste_Model();
-                            $astaModel->updateDataFromImport($data,$parameters,$where);
+
+                            // Aggiorna SOLO SE dataAstaNuova>dataAsta su DB
+                            if ($nuovoImmobile->dataAsta>$imm["dataAsta"]) {
+                                // UPDATE
+                                $astaModel = new Aste_Model();
+                                $astaModel->updateDataFromImport($data,$parameters,$where);
+                            }
+
                             
                             // Inserisci Nuova IMPORT DETAIL
                             $data2 = array(
@@ -1212,6 +1278,11 @@ class Imports extends Controller {
                 array_push($arrImmobili, $nuovoImmobile);
             }
         }
+//        if ($tipoElaborazione!='test') {
+//
+//            echo '<br>fine';
+//            exit;
+//        }
         // Return
         return $arrImmobili;
     }

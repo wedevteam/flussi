@@ -60,7 +60,26 @@ class RelAsteAgenzie_Model extends Model {
         // Return
         return $result;
     }
-    
+    // Get User list
+    public function getCountByAgenziaStatus($idAgenzia,$status) {
+        $data = ' * ';
+        $where = ' status!=:statusDeleted ';
+        $parameters = array();
+        $parameters[":statusDeleted"] = 'deleted';
+        if ($idAgenzia!=NULL ) {
+            $where .= ' AND idAgenzia=:idAgenzia ';
+            $parameters[":idAgenzia"] = $idAgenzia;
+        }
+        if ($status!=NULL ) {
+            $where .= ' AND statusImportazione=:statusImportazione ';
+            $parameters[":statusImportazione"] = $status;
+        }
+        $result = $this->db->selectCount(TAB_REL_ASTE_AGENZIE,$data,$where,$parameters);
+
+        // Return
+        return $result;
+    }
+
     
     // INSERT - Nuovo record (Return ID)
     public function create($data) {

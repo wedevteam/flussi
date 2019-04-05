@@ -100,7 +100,7 @@
                                                             <?php
                                                             if ( $this->relAsteAgenzia["isNoty"]=="off" ) {
                                                                 ?>
-                                                                <form method="POST" action="<?php echo URL ?>aste/setNotyOn?iditem=<?php echo  $this->data["id"] ?>">
+                                                                <form method="POST" action="<?php echo URL ?>aste/setNotyOn?iditem=<?php echo  $this->data["id"] ?>&idrel=<?php echo  $this->relAsteAgenzia["id"] ?>">
                                                                     <button class="btn btn-flussi-light btn-xs confirmNotyOn" 
                                                                             type="button">
                                                                         <i class="fa fa-calendar"></i> Abilita ricezione App.to via email
@@ -110,7 +110,7 @@
                                                                 <?php
                                                             } else {
                                                                 ?>
-                                                                <form method="POST" action="<?php echo URL ?>aste/setNotyOff?iditem=<?php echo  $this->data["id"] ?>">
+                                                                <form method="POST" action="<?php echo URL ?>aste/setNotyOff?iditem=<?php echo  $this->data["id"] ?>&idrel=<?php echo  $this->relAsteAgenzia["id"] ?>">
                                                                     <button class="btn btn-warning btn-xs confirmNotyOff" 
                                                                             type="button">
                                                                         <i class="fa fa-calendar"></i> Disabilita ricezione App.to via email

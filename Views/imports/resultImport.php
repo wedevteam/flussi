@@ -54,16 +54,16 @@
                                                 <th>
                                                     Strada - Indirizzo - Civico
                                                 </th>
-                                                <th class="text-center">
+                                                <th class="text-center" data-type="numeric">
                                                     Data Asta
                                                 </th>
-                                                <th class="text-center">
+                                                <th class="text-center" data-type="numeric">
                                                     Base Asta
                                                 </th>
-                                                <th class="text-center">
+                                                <th class="text-center" data-type="numeric">
                                                     Offerta Min.
                                                 </th>
-                                                <th class="text-center">
+                                                <th class="text-center" data-type="numeric">
                                                     Mq
                                                 </th>
                                                 <th data-hide="all">
@@ -143,7 +143,7 @@
                                                         </td>
                                                         <td class="text-center"><?php echo number_format($item->importoBaseAsta,2,',','.'); ?></td>
                                                         <td class="text-center"><?php echo number_format($item->importoOffertaMinima,2,',','.');  ?></td>
-                                                        <td><?php echo $item->MQSuperficie; ?></td>
+                                                        <td class="text-center" data-type="numeric" data-value="<?php echo $item->MQSuperficie; ?>"><?php echo $item->MQSuperficie; ?></td>
                                                         <td><?php echo $item->Titolo; ?></td>
                                                         <td>
                                                             <?php 
