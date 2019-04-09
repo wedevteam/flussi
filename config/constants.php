@@ -148,6 +148,7 @@ define ("GX_ARIACONDIZIONATA", serialize (array ("","Autonomo", "Centralizzato",
 define ("GX_RISCALDAMENTO", serialize (array ("","Autonomo", "Centralizzato")));
 define ("GX_TIMPOIMPIANTORISCALDAMENTO", serialize (array ("Non specificato","A radiatori", "A pavimento", "Ad aria", "A stufa")));
 define ("GX_TIPORISCALDAMENTO", serialize (array ("","Metano","Gasolio", "Gpl", "Pannelli", "Aria", "Gas", "Pellet", "Legna", "Solare", "Fotovoltaico", "Teleriscaldamento", "Pompa di calore")));
+define ("GX_CATEGORIA", serialize (array ("","Immobile residenziale", "Immobile commerciale", "Attività commerciale", "Casa vacanze", "Terreni", "Nuove costruzioni")));
 
 
 

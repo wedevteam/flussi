@@ -1249,12 +1249,245 @@ class Aste extends Controller {
     }
 
 
-    
-    
-    
-    
-    
-    
+
+
+    // GET: Export
+    public function export($error=null) {
+        // Check user role
+        if ($this->view->userLogged["role"]=="admin") {
+            Session::destroy();
+            $this->func->redirectToAction("login/index");
+            exit;
+        }
+
+        // Set Active Menu
+        $this->view->mainMenu = Functions::setActiveMenu("aste");
+        // Get Errors
+        $this->view->error = Functions::getError($error);
+
+        // Get Data
+        $asteModel = new Aste_Model();
+        $arrAsteListAll = $asteModel->getAsteList(null," id DESC ");
+        $relAsAgModel = new RelAsteAgenzie_Model();
+        $arrAsteAgenziaList = $relAsAgModel->getRelAsteAgenzieList($this->view->userLogged["id"], Null, Null);
+        $relAgPrefViewModel = new RelAgenziePrefView_Model();
+        $relAgPrefViewList = $relAgPrefViewModel->getRelAgenziePrefList($this->view->userLogged["id"], NULL,NULL);
+        $arrAsteListAgPreFilter =array();
+        $functionsModel = new Functions();
+
+        $arrAsteList = array();
+        if (is_array($arrAsteListAll) || is_object($arrAsteListAll)) {
+            foreach ($arrAsteListAll as $item) {
+                $toInsert = true;
+                // Prezzo
+                if ($this->view->platformData["prefFlagPrezzo"]=="OffertaMinima") {
+                    $Prezzo = $item["importoOffertaMinima"];
+                } else {
+                    $Prezzo = $item["importoBaseAsta"];
+                }
+                // Status
+                $Status = $item["status"];
+                // Rif. Annuncio
+                $RifAnnuncio = "";
+                // Testo
+                $Testo = $item["Testo"];
+                // Nome Agente
+                $nomeAgente = "";
+                // Rich.Visita
+                $flagRichiestaVisione = "false";
+                // data.Visita
+                $dataRichiestaVisione = Null;
+                // Img
+                $immagineURL = $item["immagine_URL"];
+                // Pref View
+                if (is_array($relAgPrefViewList) || is_object($relAgPrefViewList)) {
+                    $toInsert = false;
+                    foreach ($relAgPrefViewList as $prefView) {
+                        // Comune
+                        if ($prefView["tipoPreferenza"]=="comune") {
+                            $prefViewComune = $functionsModel->ConvertCodiceIstat($prefView["idOggetto"]);
+                            if ($prefViewComune==$item["CodiceComune"]) {
+                                $toInsert = true;
+                            }
+                        }
+                        // Provincia
+                        if ($prefView["tipoPreferenza"]=="provincia" && $prefView["idOggetto"]==$item["Provincia"]) {
+                            $toInsert = true;
+                        }
+                        // ComuneTribunale
+                        if ($prefView["tipoPreferenza"]=="comuneTribunale") {
+                            $prefViewComuneTribunale = $functionsModel->ConvertCodiceIstat($prefView["idOggetto"]);
+                            if ($prefViewComuneTribunale==$item["codiceComuneTribunale"]) {
+                                $toInsert = true;
+                            }
+                        }
+                    }
+                }
+
+                if ($toInsert) {
+                    if (is_array($arrAsteAgenziaList) || is_object($arrAsteAgenziaList)) {
+                        foreach ($arrAsteAgenziaList as $rel) {
+                            if ($rel["idAsta"]==$item["id"]) {
+                                // Prezzo
+                                if ($rel["preferenzaPrezzo"]=="OffertaMinima") {
+                                    $Prezzo = $item["importoOffertaMinima"];
+                                } else {
+                                    $Prezzo = $item["importoBaseAsta"];
+                                }
+                                // Status
+                                $Status =  $rel["status"];
+                                // Rif.Annuncio
+                                $RifAnnuncio = $rel["riferimentoAnnuncio"];
+                                // Testo
+                                $Testo = $rel["descrizione"];
+                                // Nome Agente
+                                $nomeAgente = $rel["nomeAgente"];
+                                // Rich.Visita
+                                $flagRichiestaVisione = $rel["flagRichiestaVisione"];
+                                // Data richiesta visione
+                                $dataRichiestaVisione =  $rel["dataRichiestaVisione"];
+                                // Immagine
+                                $immagineURL = $rel["immagine_URL"];
+                            }
+                        }
+                    }
+                }
+
+                // Set values
+                $arrItem = array(
+                    "id" =>$item["id"],
+                    "ComuneTribunale" =>$item["ComuneTribunale"],
+                    "SiglaProvTribunale" =>$item["SiglaProvTribunale"],
+                    "codiceComuneTribunale" =>$item["codiceComuneTribunale"],
+                    "linkTribunale" =>$item["linkTribunale"],
+                    "rge" =>$item["rge"],
+                    "lotto" =>$item["lotto"],
+                    "tipoProcedura" =>$item["tipoProcedura"],
+                    "rito" =>$item["rito"],
+                    "giudice" =>$item["giudice"],
+                    "delegato" =>$item["delegato"],
+                    "custode" =>$item["custode"],
+                    "curatore" =>$item["curatore"],
+                    "valorePerizia" =>$item["valorePerizia"],
+                    "dataPubblicazione" =>$item["dataPubblicazione"],
+                    "noteGeneriche" =>$item["noteGeneriche"],
+                    "datiCatastali" =>$item["datiCatastali"],
+                    "disponibilita" =>$item["disponibilita"],
+                    "importoBaseAsta" =>$item["importoBaseAsta"],
+                    "importoOffertaMinima" =>$item["importoOffertaMinima"],
+                    "noteAggiuntive" =>$item["noteAggiuntive"],
+                    "dataAsta" =>$item["dataAsta"],
+                    "linkAllegati" =>$item["linkAllegati"],
+                    "CodiceComune" =>$item["CodiceComune"],
+                    "Comune" =>$item["Comune"],
+                    "Provincia" =>$item["Provincia"],
+                    "ComuneProvinciaCompleto" =>$item["ComuneProvinciaCompleto"],
+                    "Strada" =>$item["Strada"],
+                    "Strada_testo" =>$item["Strada_testo"],
+                    "Indirizzo" =>$item["Indirizzo"],
+                    "Civico" =>$item["Civico"],
+                    "Cap" =>$item["Cap"],
+                    "Latitudine" =>$item["Latitudine"],
+                    "Longitudine" =>$item["Longitudine"],
+                    "Categoria" =>$item["Categoria"],
+                    "IDTipologia" =>$item["IDTipologia"],
+                    "NrLocali" =>$item["NrLocali"],
+                    "MQSuperficie" =>$item["MQSuperficie"],
+                    "TipoProprieta" =>$item["TipoProprieta"],
+                    "ClasseCatastale" =>$item["ClasseCatastale"],
+                    "Titolo" =>$item["Titolo"],
+                    "Testo" =>$Testo,
+                    "TestoBreve" =>$item["TestoBreve"],
+                    "StatoImmobile" =>$item["StatoImmobile"],
+                    "immagine_URL" =>$immagineURL ,
+                    "status" =>$Status,
+                    "Prezzo" =>$Prezzo,
+                    "riferimentoAnnuncio" =>$RifAnnuncio,
+                    "nomeAgente" =>$nomeAgente,
+                    "flagRichiestaVisione" =>$flagRichiestaVisione,
+                    "dataRichiestaVisione" =>$dataRichiestaVisione
+                );
+
+                if ($this->view->userLogged["role"]!="admin" && $toInsert) {
+                    array_push($arrAsteListAgPreFilter, $arrItem);
+                }
+
+                // Filtri
+                if (isset($_POST["btnSearch"])) {
+                    // Comune
+                    if (isset($_POST["codiceComuneFilter"]) && $_POST["codiceComuneFilter"]!="0") {
+                        $toInsert = false;
+                        if ($functionsModel->ConvertCodiceIstat($_POST["codiceComuneFilter"])==$item["CodiceComune"]) {
+                            $toInsert = true;
+                        }
+                    }
+                    // Comune Tribunale
+                    if (isset($_POST["codiceComuneTribunaleFilter"]) && $_POST["codiceComuneTribunaleFilter"]!="0") {
+                        $toInsert = false;
+                        if ($functionsModel->ConvertCodiceIstat($_POST["codiceComuneTribunaleFilter"])==$item["codiceComuneTribunale"]) {
+                            $toInsert = true;
+                        }
+                    }
+                }
+
+                // Add
+                if ($toInsert) {
+                    array_push($arrAsteList, $arrItem);
+                }
+            }
+        }
+        $this->view->asteList = $arrAsteList;
+
+        // Lista Comuni
+        $comuniModel = new Comuni_Model();
+        $comuniList = $comuniModel->getComuniList();
+        $arrComuni = array();
+        $arrComuniTribunale = array();
+        if (is_array($comuniList) || is_object($comuniList)) {
+            // Inserisci solo Comuni presenti nelle PrefVIEW dell'Agenzia
+            if (is_array($arrAsteListAgPreFilter) || is_object($arrAsteListAgPreFilter)) {
+                foreach ($comuniList as $comune) {
+                    foreach ( $arrAsteListAgPreFilter as $asta ) {
+                        $arrItem = array(
+                            "nome"=>$comune["nome"],
+                            "siglaprovincia"=>$comune["siglaprovincia"],
+                            "codice_istat"=>$comune["codice_istat"],
+                            "id"=>$comune["id"]
+                        );
+                        if ($asta["CodiceComune"] == $functionsModel->ConvertCodiceIstat($comune["codice_istat"]) ) {
+                            array_push($arrComuni, $arrItem);
+                        }
+                        if ($asta["codiceComuneTribunale"] == $functionsModel->ConvertCodiceIstat($comune["codice_istat"])) {
+                            array_push($arrComuniTribunale, $arrItem);
+                        }
+                    }
+                }
+            }
+        }
+        $arrComuniList = array();
+        if (sizeof($arrComuni)>0) {
+            $tempArr = array_unique(array_column($arrComuni, 'codice_istat'));
+            $arrComuniList = array_intersect_key($arrComuni, $tempArr);
+        }
+        $this->view->comuniList = $arrComuniList;
+        $arrComuniTribunaleList = array();
+        if (sizeof($arrComuniTribunale)>0) {
+            $tempArr2 = array_unique(array_column($arrComuniTribunale, 'codice_istat'));
+            $arrComuniTribunaleList = array_intersect_key($arrComuniTribunale, $tempArr2);
+        }
+        $this->view->comuniTribunaleList = $arrComuniTribunaleList;
+
+        // View
+        $this->view->render('aste/export', true, HEADER_MAIN);
+    }
+
+
+
+
+
+
+
+
     // Check IdItem exists
     function CheckIdItemExists($idItem) {
         if (!isset($idItem)) {
