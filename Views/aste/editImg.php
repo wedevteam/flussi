@@ -93,16 +93,6 @@
                                                     <form method="POST" action="<?php echo URL ?>aste/executeEditImagesA?iditem=<?php echo  $this->data["id"] ?>"
                                                           enctype="multipart/form-data">
                                                         <div class="row">
-                                                            <?php if ($this->error) { ?>
-                                                                <div class="col-md-12 text-center">
-                                                                    <p class="alert alert-danger"><strong>Oops...</strong><?php echo $this->error;?></p>
-                                                                </div>
-                                                            <?php }  ?>
-                                                            <?php if ($this->message) { ?>
-                                                                <div class="col-md-12 text-center">
-                                                                    <p class="alert alert-success"><?php echo $this->message;?></p>
-                                                                </div>
-                                                            <?php }  ?>
                                                             <div class="col-md-12">
                                                                 <div class="form-group">
                                                                     <label>Nuove immagini*</label>
@@ -127,35 +117,89 @@
                                                         ?>
                                                         <div class="row">
                                                             <div class="col-md-12">
-                                                                <div class="lightBoxGallery">
-                                                                    <?php
-                                                                    foreach ($this->relImg as $img) {
-                                                                        ?>
-                                                                        <a href="<?php echo $img["immagine_URL"];?>" title="Image from Unsplash" data-gallery="">
-                                                                            <img src="<?php echo $img["immagine_URL"];?>" style="max-width: 100px;">
-                                                                        </a>
+                                                                <div class="table-responsive">
+                                                                    <table class="footable table table-stripped toggle-arrow-tiny"
+                                                                           data-filter="#filter" data-limit-navigation="3">
+                                                                        <thead>
+                                                                        <tr class="bg-flussi-light">
+                                                                            <th class="text-center" data-toggle="true">
+                                                                                Immagine
+                                                                            </th>
+                                                                            <th class="text-center">Elimina</th>
+                                                                        </tr>
+                                                                        </thead>
+                                                                        <tbody>
                                                                         <?php
-                                                                    }
-                                                                    ?>
-
-                                                                    <!-- The Gallery as lightbox dialog, should be a child element of the document body -->
-                                                                    <div id="blueimp-gallery" class="blueimp-gallery">
-                                                                        <div class="slides"></div>
-                                                                        <h3 class="title"></h3>
-                                                                        <a class="prev">‹</a>
-                                                                        <a class="next">›</a>
-                                                                        <a class="close">×</a>
-                                                                        <a class="play-pause"></a>
-                                                                        <ol class="indicator"></ol>
-                                                                    </div>
-
+                                                                        foreach ($this->relImg as $img) {
+                                                                            ?>
+                                                                            <tr>
+                                                                                <td class="text-center">
+                                                                                    <img src="<?php echo $img["immagine_URL"];?>" style="max-width: 100px;">
+                                                                                </td>
+                                                                                <td class="text-center text-danger">
+                                                                                    <?php
+                                                                                    if ($img["idAgenzia"]==0) {
+                                                                                        ?>
+                                                                                        <a href="<?php echo URL ?>aste/removeImgA?iditem=<?php echo  $this->data["id"] ?>&idrel=<?php echo $img["id"]?>">
+                                                                                            <span class="text-danger"><i class="fa fa-trash"></i> Elimina</span>
+                                                                                        </a>
+                                                                                        <?php
+                                                                                    }
+                                                                                    ?>
+                                                                                </td>
+                                                                            </tr>
+                                                                            <?php
+                                                                        }
+                                                                        ?>
+                                                                        </tbody>
+                                                                        <tfoot>
+                                                                        <tr>
+                                                                            <td colspan="2">
+                                                                                <ul class="pagination float-right"></ul>
+                                                                            </td>
+                                                                        </tr>
+                                                                        </tfoot>
+                                                                    </table>
                                                                 </div>
-
                                                             </div>
                                                         </div>
                                                         <?php
                                                     }
                                                     ?>
+
+<!--                                                    --><?php
+//                                                    if (is_array($this->relImg) || is_object($this->relImg)) {
+//                                                        ?>
+<!--                                                        <div class="row">-->
+<!--                                                            <div class="col-md-12">-->
+<!--                                                                <div class="lightBoxGallery">-->
+<!--                                                                    --><?php
+//                                                                    foreach ($this->relImg as $img) {
+//                                                                        ?>
+<!--                                                                        <a href="--><?php //echo $img["immagine_URL"];?><!--" title="Image from Unsplash" data-gallery="">-->
+<!--                                                                            <img src="--><?php //echo $img["immagine_URL"];?><!--" style="max-width: 100px;">-->
+<!--                                                                        </a>-->
+<!--                                                                        --><?php
+//                                                                    }
+//                                                                    ?>
+<!---->
+<!--                                                                    <div id="blueimp-gallery" class="blueimp-gallery">-->
+<!--                                                                        <div class="slides"></div>-->
+<!--                                                                        <h3 class="title"></h3>-->
+<!--                                                                        <a class="prev">‹</a>-->
+<!--                                                                        <a class="next">›</a>-->
+<!--                                                                        <a class="close">×</a>-->
+<!--                                                                        <a class="play-pause"></a>-->
+<!--                                                                        <ol class="indicator"></ol>-->
+<!--                                                                    </div>-->
+<!---->
+<!--                                                                </div>-->
+<!---->
+<!--                                                            </div>-->
+<!--                                                        </div>-->
+<!--                                                        --><?php
+//                                                    }
+//                                                    ?>
 
 
 
@@ -211,16 +255,6 @@
                                                     <form method="POST" action="<?php echo URL ?>aste/executeEditImages?iditem=<?php echo  $this->data["id"] ?>&idrel=<?php echo  $this->relAsteAgenzia["id"] ?>"
                                                           enctype="multipart/form-data">
                                                         <div class="row">
-                                                            <?php if ($this->error) { ?>
-                                                                <div class="col-md-12 text-center">
-                                                                    <p class="alert alert-danger"><strong>Oops...</strong><?php echo $this->error;?></p>
-                                                                </div>
-                                                            <?php }  ?>
-                                                            <?php if ($this->message) { ?>
-                                                                <div class="col-md-12 text-center">
-                                                                    <p class="alert alert-success"><?php echo $this->message;?></p>
-                                                                </div>
-                                                            <?php }  ?>
                                                             <div class="col-md-12">
                                                                 <div class="form-group">
                                                                     <label>Nuove immagini*</label>
@@ -250,7 +284,7 @@
                                                                            data-filter="#filter" data-limit-navigation="3">
                                                                         <thead>
                                                                         <tr class="bg-flussi-light">
-                                                                            <th data-toggle="true">
+                                                                            <th class="text-center" data-toggle="true">
                                                                                 Immagine
                                                                             </th>
                                                                             <th class="text-center">Elimina</th>
@@ -281,17 +315,16 @@
                                                                             } ?>
                                                                         </tbody>
                                                                         <tfoot>
-                                                                        <tr>
-                                                                            <td colspan="2">
-                                                                                <ul class="pagination float-right"></ul>
-                                                                            </td>
-                                                                        </tr>
+                                                                            <tr>
+                                                                                <td colspan="2">
+                                                                                    <ul class="pagination float-right"></ul>
+                                                                                </td>
+                                                                            </tr>
                                                                         </tfoot>
                                                                     </table>
                                                                 </div>
                                                             </div>
                                                         </div>
-
                                                         <?php
                                                     }
                                                     ?>

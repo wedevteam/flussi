@@ -108,7 +108,7 @@
                                 <div class="col-md-12">
                                     <div class="form-group">
                                         <label>Cap Immobile</label>
-                                        <select class="form-control" name="capComune">
+                                        <select class="form-control" name="capComuni">
                                             <option value="0"  <?php if (isset($_POST["codiceComuneFilter"]) && $_POST["codiceComuneFilter"]==0) {echo "selected";} ?> >
                                                 Tutti
                                             </option>
@@ -162,56 +162,63 @@
                                 <div class="col-md-3">
                                     <div class="form-group">
                                         <label>Offerta Minima Da</label>
-                                        <input type="number" class="form-control" placeholder="€" name="offertaMinDa" />
+                                        <input type="number" class="form-control"
+                                               placeholder="€" name="offertaMinDa"
+                                                value="<?php if (isset($_POST["offertaMinDa"])) {echo $_POST["offertaMinDa"];} ?>"/>
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="form-group">
                                         <label>Offerta Minima A</label>
-                                        <input type="number" class="form-control" placeholder="€" name="offertaMinA" />
+                                        <input type="number" class="form-control" placeholder="€" name="offertaMinA"
+                                               value="<?php if (isset($_POST["offertaMinA"])) {echo $_POST["offertaMinA"];} ?>"/>
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="form-group">
                                         <label>Superficie Da</label>
-                                        <input type="number" class="form-control" placeholder="Mq" name="superficieDa" />
+                                        <input type="number" class="form-control" placeholder="Mq" name="superficieDa"
+                                               value="<?php if (isset($_POST["superficieDa"])) {echo $_POST["superficieDa"];} ?>"/>
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="form-group">
                                         <label>Superficie A</label>
-                                        <input type="number" class="form-control" placeholder="Mq" name="superficieA" />
+                                        <input type="number" class="form-control" placeholder="Mq" name="superficieA"
+                                               value="<?php if (isset($_POST["superficieA"])) {echo $_POST["superficieA"];} ?>"/>
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="form-group">
                                         <label>Num. Locali Da</label>
-                                        <input type="number" class="form-control" placeholder="Numero" name="NrLocaliDa" />
+                                        <input type="number" class="form-control" placeholder="Numero" name="NrLocaliDa"
+                                               value="<?php if (isset($_POST["NrLocaliDa"])) {echo $_POST["NrLocaliDa"];} ?>"/>
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="form-group">
                                         <label>Num. Locali A</label>
-                                        <input type="number" class="form-control" placeholder="Numero" name="NrLocaliA" />
+                                        <input type="number" class="form-control" placeholder="Numero" name="NrLocaliA"
+                                               value="<?php if (isset($_POST["NrLocaliA"])) {echo $_POST["NrLocaliA"];} ?>"/>
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="form-group">
                                         <label>Flag Pubblicità</label>
-                                        <select class="form-control">
-                                            <option value="">Tutti</option>
-                                            <option value="all">In Pubblicità</option>
-                                            <option value="anyone">Non In Pubblicità</option>
+                                        <select class="form-control" name="flagPubblicita">
+                                            <option value="" <?php if (isset($_POST["flagPubblicita"]) && $_POST["flagPubblicita"]=='') {echo "selected";}?>>Tutti</option>
+                                            <option value="all" <?php if (isset($_POST["flagPubblicita"]) && $_POST["flagPubblicita"]=='all') {echo "selected";}?>>In Pubblicità</option>
+                                            <option value="anyone" <?php if (isset($_POST["flagPubblicita"]) && $_POST["flagPubblicita"]=='anyone') {echo "selected";}?>>Non In Pubblicità</option>
                                         </select>
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="form-group">
                                         <label>Status Esportazione</label>
-                                        <select class="form-control">
-                                            <option value="">Tutti</option>
-                                            <option value="importato">Esportato</option>
-                                            <option value="non importato">Non Esportato</option>
+                                        <select class="form-control" name="statusExport">
+                                            <option value="" <?php if (isset($_POST["statusExport"]) && $_POST["statusExport"]=='') {echo "selected";}?>>Tutti</option>
+                                            <option value="importato" <?php if (isset($_POST["statusExport"]) && $_POST["statusExport"]=='importato') {echo "selected";}?>>Esportato</option>
+                                            <option value="non importato" <?php if (isset($_POST["statusExport"]) && $_POST["statusExport"]=='non importato') {echo "selected";}?>>Non Esportato</option>
                                         </select>
                                     </div>
                                 </div>

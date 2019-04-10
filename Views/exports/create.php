@@ -39,6 +39,72 @@
                                         </select>
                                     </div>
                                 </div>
+                                <?php
+                                $dataDa="";
+                                if (isset($_POST["dataAstaDa"])) {
+                                    $dataDa = $_POST["dataAstaDa"];
+                                }
+                                ?>
+                                <div class="col-md-4">
+                                    <div class="form-group datapickerbox">
+                                        <label>Data Asta Da</label>
+                                        <div class="input-group date">
+                                            <span class="input-group-addon">
+                                                <i class="fa fa-calendar"></i>
+                                            </span>
+                                            <input name="dataAstaDa" type="text"
+                                                   class="form-control" placeholder="gg/mm/aaaa"
+                                                   value="<?php  echo $dataDa; ?>">
+                                        </div>
+                                    </div>
+                                </div>
+                                <?php
+                                $dataA="";
+                                if (isset($_POST["dataAstaA"])) {
+                                    $dataA = $_POST["dataAstaA"];
+                                }
+                                ?>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <div class="form-group datapickerbox">
+                                            <label>Data Asta A</label>
+                                            <div class="input-group date">
+                                            <span class="input-group-addon">
+                                                <i class="fa fa-calendar"></i>
+                                            </span>
+                                                <input name="dataAstaA" type="text"
+                                                       class="form-control" placeholder="gg/mm/aaaa"
+                                                       value="<?php  echo $dataA; ?>">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-12">
+                                    <div class="form-group">
+                                        <label>Categorie</label>
+                                        <select data-placeholder="Seleziona Categorie" name="idCategorie[]"
+                                                class="chosen-select" multiple style="width:100%" tabindex="4">
+                                            <?php
+                                            $tipologieArr = unserialize (GX_CATEGORIA);
+                                            for ($i=1; $i<= sizeof($tipologieArr)-1;$i++){
+                                                $_selected = "";
+                                                if (isset($_POST["idCategorie"])) {
+                                                    foreach ($_POST["idCategorie"] as $cat) {
+                                                        if ($cat==$i) {
+                                                            $_selected = " selected ";
+                                                        }
+                                                    }
+                                                }
+                                                ?>
+                                                <option value="<?php echo $i; ?>" <?php echo $_selected; ?> >
+                                                    <?php echo $tipologieArr[$i] ?>
+                                                </option>
+                                                <?php
+                                            }
+                                            ?>
+                                        </select>
+                                    </div>
+                                </div>
                                 <div class="col-md-12">
                                     <div class="form-group">
                                         <label>
@@ -59,6 +125,38 @@
                                                 }
                                             }
                                             ?>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-12">
+                                    <div class="form-group">
+                                        <label>
+                                            Cap Immobile
+                                            <br>
+                                            <small>(Se non si seleziona nulla il sistema li prende tutti)</small>
+                                        </label>
+                                        <select class="form-control" name="capComune">
+                                            <option value="0"  <?php if (isset($_POST["codiceComuneFilter"]) && $_POST["codiceComuneFilter"]==0) {echo "selected";} ?> >
+                                                Tutti
+                                            </option>
+<!--                                            --><?php
+//                                            if (sizeof($this->comuniList)>0) {
+//                                                foreach ($this->comuniList as $comune) {
+//                                                    $_selected = "";
+//                                                    if ( isset($_POST["codiceComuneFilter"]) && $_POST["codiceComuneFilter"]!=0 ) {
+//                                                        if ($comune["codice_istat"]==$_POST["codiceComuneFilter"]) {
+//                                                            $_selected = " selected ";
+//                                                        }
+//                                                    }
+//                                                    ?>
+<!--                                                    <option value="--><?php //echo $comune["codice_istat"] ?><!--" --><?php //echo $_selected?><!-- >-->
+<!--                                                        --><?php //echo $comune["nome"]." (".$comune["siglaprovincia"].")" ?>
+<!--                                                    </option>-->
+<!--                                                    --><?php
+//                                                }
+//                                            }
+//                                            ?>
                                         </select>
                                     </div>
                                 </div>
@@ -85,28 +183,59 @@
                                         </select>
                                     </div>
                                 </div>
-<!--                                <div class="col-md-12">
+                                <div class="col-md-3">
                                     <div class="form-group">
-                                        <label>
-                                            Cap
-                                            <br>
-                                            <small>(Se non si seleziona nulla il sistema li prende tutti)</small>
-                                        </label>
-                                        <input type="text" class="form-control" name="cap" placeholder="Elenco Cap separati da virgola">
+                                        <label>Offerta Minima Da</label>
+                                        <input type="number" class="form-control" placeholder="€" name="offertaMinDa" />
                                     </div>
-                                </div>-->
-                                <div class="col-md-12">
+                                </div>
+                                <div class="col-md-3">
                                     <div class="form-group">
-                                        <label>
-                                            Tipologie
-                                            <br>
-                                            <small>(Se non si seleziona nulla il sistema le prende tutte)</small>
-                                        </label>
-                                        <select data-placeholder="Seleziona Tipologie" name="idTipologie[]"
-                                                class="chosen-select" multiple style="width:350px;" tabindex="4">
-                                            <option value="1">
-                                                Immobili Residenziali
-                                            </option>
+                                        <label>Offerta Minima A</label>
+                                        <input type="number" class="form-control" placeholder="€" name="offertaMinA" />
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label>Superficie Da</label>
+                                        <input type="number" class="form-control" placeholder="Mq" name="superficieDa" />
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label>Superficie A</label>
+                                        <input type="number" class="form-control" placeholder="Mq" name="superficieA" />
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label>Num. Locali Da</label>
+                                        <input type="number" class="form-control" placeholder="Numero" name="NrLocaliDa" />
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label>Num. Locali A</label>
+                                        <input type="number" class="form-control" placeholder="Numero" name="NrLocaliA" />
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label>Flag Pubblicità</label>
+                                        <select class="form-control">
+                                            <option value="">Tutti</option>
+                                            <option value="all">In Pubblicità</option>
+                                            <option value="anyone">Non In Pubblicità</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label>Status Esportazione</label>
+                                        <select class="form-control">
+                                            <option value="">Tutti</option>
+                                            <option value="importato">Esportato</option>
+                                            <option value="non importato">Non Esportato</option>
                                         </select>
                                     </div>
                                 </div>

@@ -319,7 +319,7 @@ class Aste extends Controller {
         // Leggi Img Aggiuntive rispetto alla prima
         $relImgModel = new RelAsteImg_Model();
         if ($this->view->userLogged["role"]=="admin") {
-            $arrImg = $relImgModel->getRelAsteImgList($_GET["iditem"],null,$this->view->userLogged["role"]);
+            $arrImg = $relImgModel->getRelAsteImgList($_GET["iditem"],0,$this->view->userLogged["role"]);
         } else {
             $arrImg = $relImgModel->getRelAsteImgList($_GET["iditem"],$this->view->userLogged["id"],$this->view->userLogged["role"]);
         }
@@ -806,12 +806,11 @@ class Aste extends Controller {
         // Leggi Img Aggiuntive rispetto alla prima
         $relImgModel = new RelAsteImg_Model();
         if ($this->view->userLogged["role"]=="admin") {
-            $arrImg = $relImgModel->getRelAsteImgList($_GET["iditem"],null,$this->view->userLogged["role"]);
+            $arrImg = $relImgModel->getRelAsteImgList($_GET["iditem"],0,$this->view->userLogged["role"]);
         } else {
             $arrImg = $relImgModel->getRelAsteImgList($_GET["iditem"],$this->view->userLogged["id"],$this->view->userLogged["role"]);
         }
         $this->view->relImg = $arrImg;
-        
         
         // View
         $this->view->render('aste/editImg', true, HEADER_MAIN);
@@ -1037,16 +1036,17 @@ class Aste extends Controller {
             return false;
         }
         // Check id rel
-        if (! $this->CheckIdImgAgenziaExists($_GET["idrel"],$_GET["iditem"])) {
+        if (! $this->CheckIdImgAgenziaExists($_GET["idrel"],$_GET["iditem"],$this->view->userLogged["id"])) {
             $this->editImg(ER_GENERICO);
             return false;
         }
 
         // Elimina Immagine
-        $where = '  id=:id AND idAgenzia=:idAgenzia AND fonte=:fonte ';
+        $where = '  id=:id AND idAgenzia=:idAgenzia AND idAsta=:idAsta AND fonte=:fonte ';
         $parameters = array();
         $parameters[":id"] = $_GET["idrel"];
-        $parameters[":idAgenzia"] = $_GET["iditem"];
+        $parameters[":idAsta"] = $_GET["iditem"];
+        $parameters[":idAgenzia"] = $this->view->userLogged["id"];
         $parameters[":fonte"] = "manuale";
 
 
@@ -1246,6 +1246,48 @@ class Aste extends Controller {
             $this->editImg(ER_GENERICO,null);
             return false;
         }
+    }
+    // POST: Remove IMG AGGIUNTIVA (SOLO ADMIN)
+    public function removeImgA() {
+        // Check
+        if ($this->view->userLogged["role"]!="admin") {
+            Session::destroy();
+            $this->func->redirectToAction("login/index");
+            exit;
+        }
+        // Checks
+        if (!$this->CheckIdItemExists($_GET["iditem"])) {
+            $this->editImg();
+            return false;
+        }
+        // Get Data
+        $this->view->data = $this->model->getDataFromId($_GET["iditem"]);
+        // Check POSTS
+        if (!isset($_GET["idrel"]) || $_GET["idrel"]=="") {
+            $this->editImg(ER_GENERICO);
+            return false;
+        }
+        // Check id rel
+        if (! $this->CheckIdImgAdminExists($_GET["idrel"],$_GET["iditem"])) {
+            $this->editImg(ER_GENERICO);
+            return false;
+        }
+
+        // Elimina Immagine
+        $where = '  id=:id ';
+        $parameters = array();
+        $parameters[":id"] = $_GET["idrel"];
+
+        // Delete
+        $relAsteImgModel = new RelAsteImg_Model();
+        if ($relAsteImgModel->deleteItem($where,$parameters)) {
+            // View
+            $this->editImg(null,MESS_MODIFICHE_SALVATE);
+        } else {
+            $this->editImg(ER_GENERICO,null);
+            return false;
+        }
+
     }
 
 
@@ -1496,7 +1538,7 @@ class Aste extends Controller {
         if ($idItem==null || $idItem=="") {
             return false;
         } else {
-            if ($this->model->getDataFromId($idItem,"agency")!=NULL) {
+            if ($this->model->getDataFromId($idItem)!=NULL) {
                 return true;
             }
         }
@@ -1519,20 +1561,36 @@ class Aste extends Controller {
         return false;
     }
     // Check Id immagine aggiuntiva Agenzia exists
-    function CheckIdImgAgenziaExists($idItem,$idAgenzia) {
-        if (!isset($idItem) || !isset($idAgenzia)) {
+    function CheckIdImgAgenziaExists($idItem,$idAsta,$idAgenzia) {
+        if (!isset($idItem) || !isset($idAsta) || !isset($idAgenzia)) {
             return false;
         }
-        if ($idItem==null || $idItem=="" || $idAgenzia==null || $idAgenzia=="") {
+        if ($idItem==null || $idItem=="" || $idAgenzia==null || $idAgenzia==""
+            || $idAsta==null || $idAsta=="") {
             return false;
         } else {
-            if ($this->model->getDataFromId($idItem,$idAgenzia)!=NULL) {
+            $relAsteImgModel = new RelAsteImg_Model();
+            if ($relAsteImgModel->getDataFromIdPerAgenzia($idItem, $idAsta, $idAgenzia)!=NULL) {
                 return true;
             }
         }
         return false;
     }
-    
+    // Check Id immagine aggiuntiva Admin exists
+    function CheckIdImgAdminExists($idItem,$idAsta) {
+        if (!isset($idItem) || !isset($idAsta)) {
+            return false;
+        }
+        if ($idItem==null || $idItem=="" || $idAsta==null || $idAsta=="") {
+            return false;
+        } else {
+            $relAsteImgModel = new RelAsteImg_Model();
+            if ($relAsteImgModel->getDataFromAdmin($idItem,$idAsta)!=NULL) {
+                return true;
+            }
+        }
+        return false;
+    }
     
     
 
