@@ -10,10 +10,272 @@
                         </h5>
                     </div>
                     <div class="ibox-content">
-                        <?php if ($_POST["btnExport"]) { ?>
+                        <?php if (isset($_POST["btnExport"])) { ?>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-group text-right" >
+<!--                                        <a class="btn btn-flussi-light" href="--><?php //echo URL ?><!--aste/export" >-->
+<!--                                            <i class="fa fa-download"></i> Nuova Esportazione-->
+<!--                                        </a>-->
+                                        <a class="btn btn-default" href="<?php echo URL ?>aste/export" >
+                                            Indietro
+                                        </a>
+                                    </div>
+                                </div>
+                                <?php
+                                if (sizeof($this->asteList)==0) {
+                                    ?>
+                                    <div class="col-md-12">
+                                        <p class="alert alert-info text-center">Non ci sono Aste corrispondenti ai Filtri selezionati</p>
+                                    </div>
+                                    <?php
+                                } else {
+                                    ?>
+                                    <div class="col-md-12">
+                                        <p class="alert alert-info text-center">
+                                            Ci sono <b><?php echo sizeof($this->asteList); ?></b> Aste da Esportare
+                                        </p>
+                                    </div>
+                                    <div class="table-responsive">
+                                        <table class="table table-striped table-bordered table-hover dataTables-example">
+                                            <thead>
+                                            <tr>
+                                                <th class="text-center" data-type="numeric">ID#</th>
+                                                <th>
+                                                    Rge / Lotto
+                                                </th>
+                                                <th>
+                                                    Tribunale
+                                                </th>
+                                                <th>
+                                                    Indirizzo
+                                                </th>
+                                                <th class="text-center" data-type="numeric">
+                                                    Data Asta
+                                                </th>
+                                                <th class="text-center" data-type="numeric">
+                                                    Base Asta
+                                                </th>
+                                                <th hidden class="text-center" data-type="numeric">
+                                                    Offerta Min.
+                                                </th>
+                                                <th class="text-center" data-type="numeric">
+                                                    Mq
+                                                </th>
+                                                <th hidden>
+                                                    Link
+                                                </th>
+                                                <th hidden>
+                                                    Tipo Procedura
+                                                </th>
+                                                <th hidden>
+                                                    Rito
+                                                </th>
+                                                <th hidden>
+                                                    Giudice
+                                                </th>
+                                                <th hidden>
+                                                    Delegato
+                                                </th>
+                                                <th hidden>
+                                                    Custode
+                                                </th>
+                                                <th hidden>
+                                                    Curatore
+                                                </th>
+                                                <th hidden>
+                                                    Latitudine
+                                                </th>
+                                                <th hidden>
+                                                    Longitudine
+                                                </th>
+                                                <th hidden>
+                                                    Testo
+                                                </th>
+                                                <th hidden>
+                                                    Rif. Annuncio
+                                                </th>
+                                                <th hidden>
+                                                    Nome Agente
+                                                </th>
+                                                <th hidden>
+                                                    Richiesta visione
+                                                </th>
+                                                <th hidden class="text-center">Status</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            <?php foreach ($this->asteList as $item) { ?>
+                                                <tr>
+                                                    <td>
+                                                        <?php echo $item["id"]."-".$this->userLogged["id"]; ?>
+                                                    </td>
+                                                    <td><?php echo $item["rge"]." / ".$item["lotto"]; ?></td>
+                                                    <td><?php echo $item["ComuneTribunale"]." (".$item["SiglaProvTribunale"].")"; ?></td>
+                                                    <td>
+                                                        <?php echo $item["ComuneProvinciaCompleto"]; ?>
+                                                        <br>
+                                                        <?php echo $item["Strada_testo"] . " ". $item["Indirizzo"]. " ". $item["Civico"]; ?>
+                                                    </td>
+                                                    <?php
+                                                    $dataAstaSort = "";
+                                                    if ($item["dataAsta"]!=Null && $item["dataAsta"]!="0000-00-00") {
+                                                        $dataAstaSort = substr($item["dataAsta"],0,4) .substr($item["dataAsta"],5,2) .substr($item["dataAsta"],8,2)  ;
+                                                    }
+                                                    ?>
+                                                    <td class="text-center" data-type="number"  data-value="<?php echo $dataAstaSort; ?>">
+                                                        <?php
+                                                        if ($item["dataAsta"]!=Null && $item["dataAsta"]!="0000-00-00") {
+                                                            echo date("d/m/y", strtotime($item["dataAsta"])) ;
+                                                        }
+                                                        ?>
+                                                    </td>
+                                                    <td class="text-center" data-value="<?php echo $item["importoBaseAsta"]; ?>">
+                                                        <?php echo number_format($item["importoBaseAsta"],2,',','.'); ?>
+                                                    </td>
+                                                    <td hidden class="text-center" data-value="<?php echo $item["importoOffertaMinima"]; ?>">
+                                                        <?php echo number_format($item["importoOffertaMinima"],2,',','.');  ?>
+                                                    </td>
+                                                    <td class="text-center"  data-type="number" data-value="<?php echo $item["MQSuperficie"]; ?>">
+                                                        <?php echo $item["MQSuperficie"]; ?>
+                                                    </td>
+                                                    <td hidden>
+                                                        <?php
+                                                        if ($item["linkTribunale"]!="") {
+                                                            ?>
+                                                            <a href="<?php echo $item["linkTribunale"]; ?>" target="_blank">
+                                                                <?php echo $item["linkTribunale"]; ?>
+                                                            </a>
+                                                            <?php
+                                                        }
+                                                        ?>
+                                                    </td>
+                                                    <td hidden><?php echo $item["tipoProcedura"]; ?></td>
+                                                    <td hidden><?php echo $item["rito"]; ?></td>
+                                                    <td hidden><?php echo $item["giudice"]; ?></td>
+                                                    <td hidden><?php echo $item["delegato"]; ?></td>
+                                                    <td hidden><?php echo $item["custode"]; ?></td>
+                                                    <td hidden><?php echo $item["curatore"]; ?></td>
+                                                    <td hidden><?php echo $item["Latitudine"]; ?></td>
+                                                    <td hidden><?php echo $item["Longitudine"]; ?></td>
+                                                    <td hidden><?php echo $item["Testo"]; ?></td>
+                                                    <td hidden>
+                                                        <?php echo $item["riferimentoAnnuncio"]; ?>
+                                                    </td>
+                                                    <td hidden>
+                                                        <?php echo $item["nomeAgente"]; ?>
+                                                    </td>
+                                                    <td hidden>
+                                                        <?php
+                                                        if ($item["flagRichiestaVisione"]=="false") {
+                                                            echo 'No';
+                                                        } else {
+                                                            echo 'Si ('.date("d/m/y", strtotime($item["dataRichiestaVisione"])).')';
+                                                        }
+                                                        ?>
+                                                    </th>
+                                                    <td hidden class="text-center">
+                                                        <?php
+                                                        if ($item["status"]=='on') {
+                                                            ?>
+                                                            <i class="fa fa-check text-success" title="Valida"></i>
+                                                            <?php
+                                                        }
+                                                        if ($item["status"]=='off') {
+                                                            ?>
+                                                            <i class="fa fa-remove text-danger" title="Non Valida"></i>
+                                                            <?php
+                                                        }
+                                                        if ($item["status"]=='importato') {
+                                                            ?>
+                                                            <i class="fa fa-check text-success" title="Esportata"></i>
+                                                            <?php
+                                                        }
+                                                        if ($item["status"]=='non importato') {
+                                                            ?>
+                                                            <i class="fa fa-remove text-danger" title="Non Esportata"></i>
+                                                            <?php
+                                                        }
+                                                        ?>
+                                                    </td>
+                                                </tr>
+                                            <?php } ?>
+                                            </tbody>
+                                            <tfoot>
+                                                <tr>
+                                                    <th class="text-center" data-type="numeric">ID#</th>
+                                                    <th>
+                                                        Rge / Lotto
+                                                    </th>
+                                                    <th>
+                                                        Tribunale
+                                                    </th>
+                                                    <th>
+                                                        Indirizzo
+                                                    </th>
+                                                    <th class="text-center" data-type="numeric">
+                                                        Data Asta
+                                                    </th>
+                                                    <th class="text-center" data-type="numeric">
+                                                        Base Asta
+                                                    </th>
+                                                    <th hidden class="text-center" data-type="numeric">
+                                                        Offerta Min.
+                                                    </th>
+                                                    <th class="text-center" data-type="numeric">
+                                                        Mq
+                                                    </th>
+                                                    <th hidden>
+                                                        Link
+                                                    </th>
+                                                    <th hidden>
+                                                        Tipo Procedura
+                                                    </th>
+                                                    <th hidden>
+                                                        Rito
+                                                    </th>
+                                                    <th hidden>
+                                                        Giudice
+                                                    </th>
+                                                    <th hidden>
+                                                        Delegato
+                                                    </th>
+                                                    <th hidden>
+                                                        Custode
+                                                    </th>
+                                                    <th hidden>
+                                                        Curatore
+                                                    </th>
+                                                    <th hidden>
+                                                        Latitudine
+                                                    </th>
+                                                    <th hidden>
+                                                        Longitudine
+                                                    </th>
+                                                    <th hidden>
+                                                        Testo
+                                                    </th>
+                                                    <th hidden>
+                                                        Rif. Annuncio
+                                                    </th>
+                                                    <th hidden>
+                                                        Nome Agente
+                                                    </th>
+                                                    <th hidden>
+                                                        Richiesta visione
+                                                    </th>
+                                                    <th hidden class="text-center">Status</th>
+                                                </tr>
+                                            </tfoot>
 
+                                        </table>
+                                    </div>
+                                    <?php
+                                }
+                                ?>
+                            </div>
                         <?php }else {?>
-                            <form method="POST"  action="<?php echo URL ?>aste/export">
+                            <form method="POST" action="<?php echo URL ?>aste/export">
                                 <div class="row">
                                     <?php
                                     $dataDa="";
@@ -73,7 +335,7 @@
                                                     }
                                                     ?>
                                                     <option value="<?php echo $i; ?>" <?php echo $_selected; ?> >
-                                                        <?php echo $tipologieArr[$i] ?>
+                                                        <?php echo $tipologieArr[$i];?>
                                                     </option>
                                                     <?php
                                                 }
@@ -111,27 +373,9 @@
                                     <div class="col-md-12">
                                         <div class="form-group">
                                             <label>Cap Immobile</label>
-                                            <select class="form-control" name="capComuni">
-                                                <option value="0"  <?php if (isset($_POST["codiceComuneFilter"]) && $_POST["codiceComuneFilter"]==0) {echo "selected";} ?> >
-                                                    Tutti
-                                                </option>
-                                                <?php
-                                                if (sizeof($this->comuniList)>0) {
-                                                    foreach ($this->comuniList as $comune) {
-                                                        $_selected = "";
-                                                        if ( isset($_POST["codiceComuneFilter"]) && $_POST["codiceComuneFilter"]!=0 ) {
-                                                            if ($comune["codice_istat"]==$_POST["codiceComuneFilter"]) {
-                                                                $_selected = " selected ";
-                                                            }
-                                                        }
-                                                        ?>
-                                                        <option value="<?php echo $comune["codice_istat"] ?>" <?php echo $_selected?> >
-                                                            <?php echo $comune["nome"]." (".$comune["siglaprovincia"].")" ?>
-                                                        </option>
-                                                        <?php
-                                                    }
-                                                }
-                                                ?>
+                                            <select data-placeholder="Seleziona Cap" name="capComuni[]"
+                                                    class="chosen-select" multiple style="100%;" tabindex="4">
+
                                             </select>
                                         </div>
                                     </div>

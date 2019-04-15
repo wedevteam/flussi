@@ -78,26 +78,30 @@ END PAGE
 
         $(document).ready(function(){
             $('.dataTables-example').DataTable({
+                "ordering": false,
                 pageLength: 25,
                 responsive: true,
                 dom: '<"html5buttons"B>lTfgitp',
                 buttons: [
                     //{ extend: 'copy'},
-                    {extend: 'csv'},
-                    // {extend: 'excel', title: 'Lista Aste'},
+                    {extend: 'csv', title: 'flussiaste-Elenco Aste'},
+                     {extend: 'excel', title: 'flussiaste-Elenco Aste'},
                     //{extend: 'pdf', title: 'ExampleFile'},
 
-                    {extend: 'print',
-                        customize: function (win){
-                            $(win.document.body).addClass('white-bg');
-                            $(win.document.body).css('font-size', '10px');
-
-                            $(win.document.body).find('table')
-                                .addClass('compact')
-                                .css('font-size', 'inherit');
-                        }
-                    }
+                    //  {extend: 'print',
+                    //     customize: function (win){
+                    //         $(win.document.body).addClass('white-bg');
+                    //         $(win.document.body).css('font-size', '10px');
+                    //
+                    //         $(win.document.body).find('table')
+                    //             .addClass('compact')
+                    //             .css('font-size', 'inherit');
+                    //     }
+                    // }
                 ]
+                // aoColumnDefs: [
+                //     { "sType": "numeric", "aTargets": [ 6 ] }
+                // ]
 
             });
 
