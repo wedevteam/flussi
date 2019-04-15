@@ -10,6 +10,11 @@
                         </h5>
                     </div>
                     <div class="ibox-content">
+                        <?php //if ($_POST[""]) ?>
+
+                        <?php ?>
+
+                        <?php ?>
                         <form method="POST"  action="<?php echo URL ?>aste/export">
                             <div class="row">
                                 <?php
@@ -227,7 +232,7 @@
                                         <a class="btn btn-default" href="<?php echo URL ?>aste/index" >
                                             Annulla
                                         </a>
-                                        <button class="btn btn-flussi-light" type="submit">
+                                        <button class="btn btn-flussi-light" name="btnExport" type="submit">
                                             Esporta CSV
                                         </button>
                                     </div>

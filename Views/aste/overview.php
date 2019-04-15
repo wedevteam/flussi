@@ -28,6 +28,11 @@
                                             </a>
                                         </li>
                                         <li>
+                                            <a class="nav-link"  href="<?php echo URL ?>aste/gallery?iditem=<?php echo $this->data["id"]; ?>">
+                                                <i class="fa fa-photo"></i> Gallery
+                                            </a>
+                                        </li>
+                                        <li>
                                             <a class="nav-link" href="<?php echo URL ?>aste/edit?iditem=<?php echo $this->data["id"]; ?>">
                                                 <i class="fa fa-pencil"></i> Modifica
                                             </a>
@@ -91,32 +96,36 @@
                                                                   <br>
                                                                   <strong>Tipologia: </strong>Immobili Residenziali<?php //echo $this->data["IDTipologia"] ?>
                                                                   <br>
-                                                                  <strong>Link Immagini: </strong>
+                                                                  <strong>
+                                                                      <a href="<?php echo URL ?>aste/gallery?iditem=<?php echo $this->data["id"]; ?>">
+                                                                          Galleria Immagini
+                                                                      </a>
+                                                                  </strong>
                                                                   <?php
-                                                                  if ( is_array($this->relImg) || is_object($this->relImg) ) {
-                                                                      foreach($this->relImg as $img){
-                                                                          ?>
-                                                                          <br>
-                                                                          <a href="<?php echo $img["immagine_URL"]; ?>" target="_blank"">
-                                                                          <?php echo substr($img["immagine_URL"],0,15)."..."; ?><i class="fa fa-external-link"></i>
-                                                                          </a>
-                                                                        <?php
-                                                                      }
-                                                                  } else {
-                                                                      if ($this->userLogged["role"]=="admin") {
-    //                                                                    ?>
-                                                                          <a href="<?php echo $this->data["immagine_URL"]; ?>" target="_blank">
-                                                                              <?php echo substr($this->data["immagine_URL"],0,15)."..."; ?><i class="fa fa-external-link"></i>
-                                                                          </a>
-                                                                          <?php
-                                                                      } else {
-                                                                            ?>
-                                                                            <a href="<?php echo $this->relAsteAgenzia["immagine_URL"]; ?>" target="_blank">
-                                                                                <?php echo substr($this->relAsteAgenzia["immagine_URL"],0,15)."..."; ?><i class="fa fa-external-link"></i>
-                                                                            </a>
-                                                                            <?php
-                                                                      }
-                                                                  }
+//                                                                  if ( is_array($this->relImg) || is_object($this->relImg) ) {
+//                                                                      foreach($this->relImg as $img){
+//                                                                          ?>
+<!--                                                                          <br>-->
+<!--                                                                          <a href="--><?php //echo $img["immagine_URL"]; ?><!--" target="_blank"">-->
+<!--                                                                          --><?php //echo substr($img["immagine_URL"],0,15)."..."; ?><!--<i class="fa fa-external-link"></i>-->
+<!--                                                                          </a>-->
+<!--                                                                        --><?php
+//                                                                      }
+//                                                                  } else {
+//                                                                      if ($this->userLogged["role"]=="admin") {
+//    //                                                                    ?>
+<!--                                                                          <a href="--><?php //echo $this->data["immagine_URL"]; ?><!--" target="_blank">-->
+<!--                                                                              --><?php //echo substr($this->data["immagine_URL"],0,15)."..."; ?><!--<i class="fa fa-external-link"></i>-->
+<!--                                                                          </a>-->
+<!--                                                                          --><?php
+//                                                                      } else {
+//                                                                            ?>
+<!--                                                                            <a href="--><?php //echo $this->relAsteAgenzia["immagine_URL"]; ?><!--" target="_blank">-->
+<!--                                                                                --><?php //echo substr($this->relAsteAgenzia["immagine_URL"],0,15)."..."; ?><!--<i class="fa fa-external-link"></i>-->
+<!--                                                                            </a>-->
+<!--                                                                            --><?php
+//                                                                      }
+//                                                                  }
                                                                   ?>
                                                             </address>
                                                           </div>

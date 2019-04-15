@@ -1291,6 +1291,46 @@ class Aste extends Controller {
     }
 
 
+    // GET: Gallery
+    public function gallery($error=null, $message=null) {
+        // Set Active Menu
+        $this->view->mainMenu = Functions::setActiveMenu("aste");
+        // Get Errors
+        $this->view->error = Functions::getError($error);
+        $this->view->message = Functions::getMessages($message);
+
+        // Checks
+        if (!$this->CheckIdItemExists($_GET["iditem"])) {
+            $this->index();
+            return false;
+        }
+        // Get Data
+        $this->view->data = $this->model->getDataFromId($_GET["iditem"]);
+
+        if ($this->view->userLogged["role"]!="admin") {
+            $relAsteAgModel = new RelAsteAgenzie_Model();
+            // Get Record RelAsteAgenzie
+            // Checks
+            if (!$this->CheckIdItemExistsRel($this->view->userLogged["id"], $_GET["iditem"])) {
+                $this->index();
+                return false;
+            }
+            $this->view->relAsteAgenzia = $relAsteAgModel->getDataFromIdAgIdAsta($this->view->userLogged["id"], $_GET["iditem"]);
+        }
+
+        // Leggi Img Aggiuntive rispetto alla prima
+        $relImgModel = new RelAsteImg_Model();
+        if ($this->view->userLogged["role"]=="admin") {
+            $arrImg = $relImgModel->getRelAsteImgList($_GET["iditem"],0,$this->view->userLogged["role"]);
+        } else {
+            $arrImg = $relImgModel->getRelAsteImgList($_GET["iditem"],$this->view->userLogged["id"],$this->view->userLogged["role"]);
+        }
+        $this->view->relImg = $arrImg;
+
+        // View
+        $this->view->render('aste/gallery', true, HEADER_MAIN);
+    }
+
 
 
     // GET: Export

@@ -28,6 +28,11 @@
                                             </a>
                                         </li>
                                         <li>
+                                            <a class="nav-link"  href="<?php echo URL ?>aste/gallery?iditem=<?php echo $this->data["id"]; ?>">
+                                                <i class="fa fa-photo"></i> Gallery
+                                            </a>
+                                        </li>
+                                        <li>
                                             <a class="nav-link" href="<?php echo URL ?>aste/edit?iditem=<?php echo $this->data["id"]; ?>">
                                                 <i class="fa fa-pencil"></i> Modifica
                                             </a>
