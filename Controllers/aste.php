@@ -1520,47 +1520,56 @@ class Aste extends Controller {
         }
         $this->view->asteList = $arrAsteList;
 
-        // Lista Comuni
-        $comuniModel = new Comuni_Model();
-        $comuniList = $comuniModel->getComuniList();
-        $arrComuni = array();
-        $arrComuniTribunale = array();
-        if (is_array($comuniList) || is_object($comuniList)) {
-            // Inserisci solo Comuni presenti nelle PrefVIEW dell'Agenzia
-            if (is_array($arrAsteListAgPreFilter) || is_object($arrAsteListAgPreFilter)) {
-                foreach ($comuniList as $comune) {
-                    foreach ( $arrAsteListAgPreFilter as $asta ) {
-                        $arrItem = array(
-                            "nome"=>$comune["nome"],
-                            "siglaprovincia"=>$comune["siglaprovincia"],
-                            "codice_istat"=>$comune["codice_istat"],
-                            "id"=>$comune["id"]
-                        );
-                        if ($asta["CodiceComune"] == $functionsModel->ConvertCodiceIstat($comune["codice_istat"]) ) {
-                            array_push($arrComuni, $arrItem);
-                        }
-                        if ($asta["codiceComuneTribunale"] == $functionsModel->ConvertCodiceIstat($comune["codice_istat"])) {
-                            array_push($arrComuniTribunale, $arrItem);
+
+
+        if (isset($_POST["btnExport"])) {
+
+        } else {
+
+            // Lista Comuni
+            $comuniModel = new Comuni_Model();
+            $comuniList = $comuniModel->getComuniList();
+            $arrComuni = array();
+            $arrComuniTribunale = array();
+            if (is_array($comuniList) || is_object($comuniList)) {
+                // Inserisci solo Comuni presenti nelle PrefVIEW dell'Agenzia
+                if (is_array($arrAsteListAgPreFilter) || is_object($arrAsteListAgPreFilter)) {
+                    foreach ($comuniList as $comune) {
+                        foreach ( $arrAsteListAgPreFilter as $asta ) {
+                            $arrItem = array(
+                                "nome"=>$comune["nome"],
+                                "siglaprovincia"=>$comune["siglaprovincia"],
+                                "codice_istat"=>$comune["codice_istat"],
+                                "id"=>$comune["id"]
+                            );
+                            if ($asta["CodiceComune"] == $functionsModel->ConvertCodiceIstat($comune["codice_istat"]) ) {
+                                array_push($arrComuni, $arrItem);
+                            }
+                            if ($asta["codiceComuneTribunale"] == $functionsModel->ConvertCodiceIstat($comune["codice_istat"])) {
+                                array_push($arrComuniTribunale, $arrItem);
+                            }
                         }
                     }
                 }
             }
-        }
-        $arrComuniList = array();
-        if (sizeof($arrComuni)>0) {
-            $tempArr = array_unique(array_column($arrComuni, 'codice_istat'));
-            $arrComuniList = array_intersect_key($arrComuni, $tempArr);
-        }
-        $this->view->comuniList = $arrComuniList;
-        $arrComuniTribunaleList = array();
-        if (sizeof($arrComuniTribunale)>0) {
-            $tempArr2 = array_unique(array_column($arrComuniTribunale, 'codice_istat'));
-            $arrComuniTribunaleList = array_intersect_key($arrComuniTribunale, $tempArr2);
-        }
-        $this->view->comuniTribunaleList = $arrComuniTribunaleList;
+            $arrComuniList = array();
+            if (sizeof($arrComuni)>0) {
+                $tempArr = array_unique(array_column($arrComuni, 'codice_istat'));
+                $arrComuniList = array_intersect_key($arrComuni, $tempArr);
+            }
+            $this->view->comuniList = $arrComuniList;
+            $arrComuniTribunaleList = array();
+            if (sizeof($arrComuniTribunale)>0) {
+                $tempArr2 = array_unique(array_column($arrComuniTribunale, 'codice_istat'));
+                $arrComuniTribunaleList = array_intersect_key($arrComuniTribunale, $tempArr2);
+            }
+            $this->view->comuniTribunaleList = $arrComuniTribunaleList;
 
-        // View
-        $this->view->render('aste/export', true, HEADER_MAIN);
+            // View
+            $this->view->render('aste/export', true, HEADER_MAIN);
+        }
+
+
     }
 
 
