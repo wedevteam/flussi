@@ -17,6 +17,7 @@ define('TAB_PLATFORM','platform');
 define('TAB_REGIONI', 'regioni');
 define('TAB_PROVINCE', 'province');
 define('TAB_COMUNI', 'comuni');
+define('TAB_CAP', 'cap');
 
 
 define('TAB_USERS', 'users');

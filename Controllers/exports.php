@@ -9,6 +9,7 @@
 require 'Models/aste_model.php';
 require 'Models/agency_model.php';
 require 'Models/comuni_model.php';
+require 'Models/cap_model.php';
 require 'Models/dbcucine_model.php';
 require 'Models/dbstrade_model.php';
 require 'Models/imports_model.php';
@@ -78,6 +79,8 @@ class Exports extends Controller {
         $this->view->agencyList = $agencyModel->getUsersListByRole("agency");
         $comuniModel = new Comuni_Model();
         $this->view->comuniList = $comuniModel->getComuniList();
+        $capModel = new Cap_Model();
+        $this->view->capList = $capModel->getCapList();
         
         // View
         $this->view->render('exports/create', true, HEADER_MAIN);

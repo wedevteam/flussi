@@ -259,16 +259,16 @@
                                                         ?>
                                                     </th>
                                                 <?php } ?>
-                                                <td class="text-center">
+                                                <td class="text-center" data-value="<?php echo $item["status"]; ?>">
                                                     <?php 
                                                     if ($item["status"]=='importato') {
                                                         ?>
-                                                        <i class="fa fa-check text-success" title="Esportata"></i>
+                                                        <span class="text-info">Esportata</span>
                                                         <?php
                                                     } 
                                                     if ($item["status"]=='non importato') {
                                                         ?>
-                                                        <i class="fa fa-remove text-danger" title="Non Esportata"></i>
+                                                        <span class="text-danger">Non Esportata</span>
                                                         <?php
                                                     }
                                                     if ($item["status"]=='on') {

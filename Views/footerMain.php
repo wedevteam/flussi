@@ -84,7 +84,7 @@ END PAGE
                 dom: '<"html5buttons"B>lTfgitp',
                 buttons: [
                     //{ extend: 'copy'},
-                    {extend: 'csv', title: 'flussiaste-Elenco Aste'},
+                    // {extend: 'csv', title: 'flussiaste-Elenco Aste'},
                      {extend: 'excel', title: 'flussiaste-Elenco Aste'},
                     //{extend: 'pdf', title: 'ExampleFile'},
 

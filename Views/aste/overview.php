@@ -682,7 +682,7 @@
                                                                 <br>
                                                                 <strong>Stato Costruzione: </strong><br>Buono<?php //echo $this->data["StatoCostruzione"] ?>
                                                                 <br>
-                                                                <strong>Allarme: </strong><br><?php echo $this->data["Allarme"] ?>
+                                                                <strong>Allarme: </strong>
                                                                 <?php 
                                                                 if ($this->data["Allarme"]=="false"){
                                                                     echo '<br>Assente';

@@ -128,7 +128,6 @@
                                         </select>
                                     </div>
                                 </div>
-
                                 <div class="col-md-12">
                                     <div class="form-group">
                                         <label>
@@ -136,27 +135,27 @@
                                             <br>
                                             <small>(Se non si seleziona nulla il sistema li prende tutti)</small>
                                         </label>
-                                        <select class="form-control" name="capComune">
-                                            <option value="0"  <?php if (isset($_POST["codiceComuneFilter"]) && $_POST["codiceComuneFilter"]==0) {echo "selected";} ?> >
-                                                Tutti
-                                            </option>
-<!--                                            --><?php
-//                                            if (sizeof($this->comuniList)>0) {
-//                                                foreach ($this->comuniList as $comune) {
-//                                                    $_selected = "";
-//                                                    if ( isset($_POST["codiceComuneFilter"]) && $_POST["codiceComuneFilter"]!=0 ) {
-//                                                        if ($comune["codice_istat"]==$_POST["codiceComuneFilter"]) {
-//                                                            $_selected = " selected ";
-//                                                        }
-//                                                    }
-//                                                    ?>
-<!--                                                    <option value="--><?php //echo $comune["codice_istat"] ?><!--" --><?php //echo $_selected?><!-- >-->
-<!--                                                        --><?php //echo $comune["nome"]." (".$comune["siglaprovincia"].")" ?>
-<!--                                                    </option>-->
-<!--                                                    --><?php
-//                                                }
-//                                            }
-//                                            ?>
+                                        <select data-placeholder="Seleziona Cap" name="capComuni[]"
+                                                class="chosen-select" multiple style="100%;" tabindex="4">
+                                            <?php
+                                            if (sizeof($this->capList)>0) {
+                                                foreach ($this->capList as $cap) {
+                                                    $_selected = "";
+                                                    if ( isset($_POST["capComuni"])) {
+                                                        foreach ($_POST["capComuni"] as $codCap ) {
+                                                            if ($cap["cap"]==$codCap) {
+                                                                $_selected = " selected ";
+                                                            }
+                                                        }
+                                                    }
+                                                    ?>
+                                                    <option value="<?php echo $cap["cap"] ?>" <?php echo $_selected?> >
+                                                        <?php echo $cap["cap"]; ?>
+                                                    </option>
+                                                    <?php
+                                                }
+                                            }
+                                            ?>
                                         </select>
                                     </div>
                                 </div>

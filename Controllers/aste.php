@@ -11,6 +11,7 @@ require 'Models/relagenziepref_model.php';
 require 'Models/relagenzieprefview_model.php';
 require 'Models/agency_model.php';
 require 'Models/comuni_model.php';
+require 'Models/cap_model.php';
 require 'Models/dbcucine_model.php';
 require 'Models/dbstrade_model.php';
 require 'Models/importdetails_model.php';
@@ -120,7 +121,7 @@ class Aste extends Controller {
                                         $Prezzo = $item["importoBaseAsta"];
                                     }
                                     // Status
-                                    $Status =  $rel["status"];
+                                    $Status =  $rel["statusImportazione"];
                                     // Rif.Annuncio
                                     $RifAnnuncio = $rel["riferimentoAnnuncio"];
                                     // Testo
@@ -1381,6 +1382,8 @@ class Aste extends Controller {
                 $dataRichiestaVisione = Null;
                 // Img
                 $immagineURL = $item["immagine_URL"];
+                // FlagPubb
+                $flagPubb = "";
                 // Pref View
                 if (is_array($relAgPrefViewList) || is_object($relAgPrefViewList)) {
                     $toInsert = false;
@@ -1417,7 +1420,7 @@ class Aste extends Controller {
                                     $Prezzo = $item["importoBaseAsta"];
                                 }
                                 // Status
-                                $Status =  $rel["status"];
+                                $Status =  $rel["statusImportazione"];
                                 // Rif.Annuncio
                                 $RifAnnuncio = $rel["riferimentoAnnuncio"];
                                 // Testo
@@ -1430,6 +1433,8 @@ class Aste extends Controller {
                                 $dataRichiestaVisione =  $rel["dataRichiestaVisione"];
                                 // Immagine
                                 $immagineURL = $rel["immagine_URL"];
+                                // FlagPubb
+                                $flagPubb = $rel["flagPubblicita"];
                             }
                         }
                     }
@@ -1487,29 +1492,140 @@ class Aste extends Controller {
                     "riferimentoAnnuncio" =>$RifAnnuncio,
                     "nomeAgente" =>$nomeAgente,
                     "flagRichiestaVisione" =>$flagRichiestaVisione,
-                    "dataRichiestaVisione" =>$dataRichiestaVisione
+                    "dataRichiestaVisione" =>$dataRichiestaVisione,
+                    "flagPubblicita" => $flagPubb
                 );
 
                 if ($this->view->userLogged["role"]!="admin" && $toInsert) {
                     array_push($arrAsteListAgPreFilter, $arrItem);
                 }
 
-                // Filtri
-                if (isset($_POST["btnSearch"])) {
-                    // Comune
-                    if (isset($_POST["codiceComuneFilter"]) && $_POST["codiceComuneFilter"]!="0") {
+                // APPLICA FILTRI DI ESPORTAZIONE
+                if (isset($_POST["btnExport"])) {
+                    // codiciComuni
+                    if (isset($_POST["codiciComuni"]) && $_POST["codiciComuni"]!=null && $_POST["codiciComuni"]!="") {
                         $toInsert = false;
-                        if ($functionsModel->ConvertCodiceIstat($_POST["codiceComuneFilter"])==$item["CodiceComune"]) {
-                            $toInsert = true;
+                        foreach($_POST["codiciComuni"] as $comune){
+                            if ($item["CodiceComune"]== $functionsModel->ConvertCodiceIstat($comune)) {
+                                $toInsert = true;
+                            }
                         }
                     }
-                    // Comune Tribunale
-                    if (isset($_POST["codiceComuneTribunaleFilter"]) && $_POST["codiceComuneTribunaleFilter"]!="0") {
-                        $toInsert = false;
-                        if ($functionsModel->ConvertCodiceIstat($_POST["codiceComuneTribunaleFilter"])==$item["codiceComuneTribunale"]) {
-                            $toInsert = true;
+                    // cap
+                    if ($toInsert) {
+                        if (isset($_POST["capComuni"]) && $_POST["capComuni"]!=null && $_POST["capComuni"]!="") {
+                            $toInsert = false;
+                            foreach($_POST["capComuni"] as $cap){
+                                if ($item["Cap"]==$cap) {
+                                    $toInsert = true;
+                                }
+                            }
                         }
                     }
+                    // codiciComuniTribunali
+                    if ($toInsert) {
+                        if (isset($_POST["codiciComuniTribunali"]) && $_POST["codiciComuniTribunali"]!=null && $_POST["codiciComuniTribunali"]!="") {
+                            $toInsert = false;
+                            foreach($_POST["codiciComuniTribunali"] as $comune){
+                                if ($item["codiceComuneTribunale"]== $functionsModel->ConvertCodiceIstat($comune)) {
+                                    $toInsert = true;
+                                }
+                            }
+                        }
+                    }
+                    // OffertaMinima DA
+                    if ($toInsert) {
+                        if (isset($_POST["offertaMinDa"]) && $_POST["offertaMinDa"]!=null && $_POST["offertaMinDa"]!="") {
+                            if ($item["importoOffertaMinima"]<$_POST["offertaMinDa"]) {
+                                $toInsert = false;
+                            }
+                        }
+                    }
+                    // OffertaMinima A
+                    if ($toInsert) {
+                        if (isset($_POST["offertaMinA"]) && $_POST["offertaMinA"]!=null && $_POST["offertaMinA"]!="") {
+                            if ($item["importoOffertaMinima"]>$_POST["offertaMinA"]) {
+                                $toInsert = false;
+                            }
+                        }
+                    }
+                    // superficie DA
+                    if ($toInsert) {
+                        if (isset($_POST["superficieDa"]) && $_POST["superficieDa"]!=null && $_POST["superficieDa"]!="") {
+                            if ($item["MQSuperficie"]<$_POST["superficieDa"]) {
+                                $toInsert = false;
+                            }
+                        }
+                    }
+                    // superficie A
+                    if ($toInsert) {
+                        if (isset($_POST["superficieA"]) && $_POST["superficieA"]!=null && $_POST["superficieA"]!="") {
+                            if ($item["MQSuperficie"]>$_POST["superficieA"]) {
+                                $toInsert = false;
+                            }
+                        }
+                    }
+                    // NrLocali DA
+                    if ($toInsert) {
+                        if (isset($_POST["NrLocaliDa"]) && $_POST["NrLocaliDa"]!=null && $_POST["NrLocaliDa"]!="") {
+                            if ($item["NrLocali"]<$_POST["NrLocaliDa"]) {
+                                $toInsert = false;
+                            }
+                        }
+                    }
+                    // NrLocali A
+                    if ($toInsert) {
+                        if (isset($_POST["NrLocaliA"]) && $_POST["NrLocaliA"]!=null && $_POST["NrLocaliA"]!="") {
+                            if ($item["NrLocali"]>$_POST["NrLocaliA"]) {
+                                $toInsert = false;
+                            }
+                        }
+                    }
+                    // Flag Pubblicità
+                    if ($toInsert) {
+                        if (isset($_POST["flagPubblicita"]) && $_POST["flagPubblicita"]!=null && $_POST["flagPubblicita"]!="") {
+                        if ($flagPubb!=$_POST["flagPubblicita"]) {
+                            $toInsert = false;
+                        }
+                        }
+                    }
+                    // Status Esportazione
+                    if ($toInsert) {
+                        if (isset($_POST["statusExport"]) && $_POST["statusExport"]!=null && $_POST["statusExport"]!="") {
+                            if ($Status!=$_POST["statusExport"]) {
+                                $toInsert = false;
+                            }
+                        }
+                    }
+                    // Data Asta DA
+                    if ($toInsert) {
+                        if (isset($_POST["dataAstaDa"]) && $_POST["dataAstaDa"]!=null && $_POST["dataAstaDa"]!="") {
+                            if ($item["dataAsta"]<$functionsModel->transformDateFormat(1,$_POST["dataAstaDa"])) {
+                                $toInsert = false;
+                            }
+                        }
+                    }
+                    // Data Asta A
+                    if ($toInsert) {
+                        if (isset($_POST["dataAstaA"]) && $_POST["dataAstaA"]!=null && $_POST["dataAstaA"]!="") {
+                            if ($item["dataAsta"]>$functionsModel->transformDateFormat(1,$_POST["dataAstaA"])) {
+                                $toInsert = false;
+                            }
+                        }
+                    }
+                    // Categorie
+                    if ($toInsert) {
+                        if (isset($_POST["idCategorie"]) && $_POST["idCategorie"]!=null && $_POST["idCategorie"]!="") {
+                            $toInsert = false;
+                            foreach($_POST["idCategorie"] as $cat){
+                                if ($item["Categoria"]==$cat) {
+                                    $toInsert = true;
+                                }
+                            }
+                        }
+                    }
+
+
                 }
 
                 // Add
@@ -1523,200 +1639,200 @@ class Aste extends Controller {
 
 
         if (isset($_POST["btnExport"])) {
-            if (sizeof($arrAsteList)>0) {
-                $arrAsteListFiltrato = array();
-                // APPLICA FILTRI DI ESPORTAZIONE
-                foreach ($arrAsteList as $item){
-                    $isToInsert = true;
-
-                    if ($isToInsert) {
-                        // codiciComuni
-                        if (isset($_POST["codiciComuni"]) && $_POST["codiciComuni"]!=null && $_POST["codiciComuni"]!="") {
-                            $isToInsert = false;
-                            foreach($_POST["codiciComuni"] as $comune){
-                                if ($item["CodiceComune"]== $functionsModel->ConvertCodiceIstat($comune)) {
-                                    $isToInsert = true;
-                                }
-                            }
-                        }
-                    }
-                    if ($isToInsert) {
-                        // cap
-                        if (isset($_POST["capComuni"]) && $_POST["capComuni"]!=null && $_POST["capComuni"]!="") {
-                            $isToInsert = false;
-                            foreach($_POST["capComuni"] as $cap){
-                                if ($item["Cap"]==$cap) {
-                                    $isToInsert = true;
-                                }
-                            }
-                        }
-                    }
-                    if ($isToInsert) {
-                        // codiciComuniTribunali
-                        if (isset($_POST["codiciComuniTribunali"]) && $_POST["codiciComuniTribunali"]!=null && $_POST["codiciComuniTribunali"]!="") {
-                            $isToInsert = false;
-                            foreach($_POST["codiciComuniTribunali"] as $comune){
-                                if ($item["ComuneTribunale"]== $functionsModel->ConvertCodiceIstat($comune)) {
-                                    $isToInsert = true;
-                                }
-                            }
-                        }
-                    }
-                    if ($isToInsert) {
-                        // OffertaMinima DA
-                        if (isset($_POST["offertaMinDa"]) && $_POST["offertaMinDa"]!=null && $_POST["offertaMinDa"]!="") {
-                            if ($item["importoOffertaMinima"]<$_POST["offertaMinDa"]) {
-                                $isToInsert = false;
-                            }
-                        }
-                    }
-                    if ($isToInsert) {
-                        // OffertaMinima A
-                        if (isset($_POST["offertaMinA"]) && $_POST["offertaMinA"]!=null && $_POST["offertaMinA"]!="") {
-                            if ($item["importoOffertaMinima"]>$_POST["offertaMinA"]) {
-                                $isToInsert = false;
-                            }
-                        }
-                    }
-                    if ($isToInsert) {
-                        // superficie DA
-                        if (isset($_POST["superficieDa"]) && $_POST["superficieDa"]!=null && $_POST["superficieDa"]!="") {
-                            if ($item["MQSuperficie"]<$_POST["superficieDa"]) {
-                                $isToInsert = false;
-                            }
-                        }
-                    }
-                    if ($isToInsert) {
-                        // superficie A
-                        if (isset($_POST["superficieA"]) && $_POST["superficieA"]!=null && $_POST["superficieA"]!="") {
-                            if ($item["MQSuperficie"]>$_POST["superficieA"]) {
-                                $isToInsert = false;
-                            }
-                        }
-                    }
-                    if ($isToInsert) {
-                        // NrLocali DA
-                        if (isset($_POST["NrLocaliDa"]) && $_POST["NrLocaliDa"]!=null && $_POST["NrLocaliDa"]!="") {
-                            if ($item["NrLocali"]<$_POST["NrLocaliDa"]) {
-                                $isToInsert = false;
-                            }
-                        }
-                    }
-                    if ($isToInsert) {
-                        // NrLocali A
-                        if (isset($_POST["NrLocaliA"]) && $_POST["NrLocaliA"]!=null && $_POST["NrLocaliA"]!="") {
-                            if ($item["NrLocali"]>$_POST["NrLocaliA"]) {
-                                $isToInsert = false;
-                            }
-                        }
-                    }
-                    if ($isToInsert) {
-                        // Flag Pubblicità
-                        if (isset($_POST["flagPubblicita"]) && $_POST["flagPubblicita"]!=null && $_POST["flagPubblicita"]!="") {
-//                        if ($item["NrLocali"]!=$_POST["flagPubblicita"]) {
+//            if (sizeof($arrAsteList)>0) {
+//                $arrAsteListFiltrato = array();
+//                // APPLICA FILTRI DI ESPORTAZIONE
+//                foreach ($arrAsteList as $item){
+//                    $isToInsert = true;
+//
+//                    if ($isToInsert) {
+//                        // codiciComuni
+//                        if (isset($_POST["codiciComuni"]) && $_POST["codiciComuni"]!=null && $_POST["codiciComuni"]!="") {
 //                            $isToInsert = false;
+//                            foreach($_POST["codiciComuni"] as $comune){
+//                                if ($item["CodiceComune"]== $functionsModel->ConvertCodiceIstat($comune)) {
+//                                    $isToInsert = true;
+//                                }
+//                            }
 //                        }
-                        }
-                    }
-                    if ($isToInsert) {
-                        // Status Esportazione
-                        if (isset($_POST["statusExport"]) && $_POST["statusExport"]!=null && $_POST["statusExport"]!="") {
-                            if ($item["status"]!=$_POST["statusExport"]) {
-                                $isToInsert = false;
-                            }
-                        }
-                    }
-
-
-                    if ($isToInsert) {
-                        // Data Asta DA
-                        if (isset($_POST["dataAstaDa"]) && $_POST["dataAstaDa"]!=null && $_POST["dataAstaDa"]!="") {
-                            if ($item["dataAsta"]<$functionsModel->transformDateFormat(1,$_POST["dataAstaDa"])) {
-                                $isToInsert = false;
-                            }
-                        }
-                    }
-                    if ($isToInsert) {
-                        // Data Asta A
-                        if (isset($_POST["dataAstaA"]) && $_POST["dataAstaA"]!=null && $_POST["dataAstaA"]!="") {
-                            if ($item["dataAsta"]>$functionsModel->transformDateFormat(1,$_POST["dataAstaA"])) {
-                                $isToInsert = false;
-                            }
-                        }
-                    }
-                    if ($isToInsert) {
-                        // Categorie
-                        if (isset($_POST["idCategorie"]) && $_POST["idCategorie"]!=null && $_POST["idCategorie"]!="") {
-                            $isToInsert = false;
-                            foreach($_POST["idCategorie"] as $cat){
-                                if ($item["Categoria"]==$cat) {
-                                    $isToInsert = true;
-                                }
-                            }
-                        }
-                    }
-
-                    // Set values
-                    $arrItem = array(
-                        "id" =>$item["id"],
-                        "ComuneTribunale" =>$item["ComuneTribunale"],
-                        "SiglaProvTribunale" =>$item["SiglaProvTribunale"],
-                        "codiceComuneTribunale" =>$item["codiceComuneTribunale"],
-                        "linkTribunale" =>$item["linkTribunale"],
-                        "rge" =>$item["rge"],
-                        "lotto" =>$item["lotto"],
-                        "tipoProcedura" =>$item["tipoProcedura"],
-                        "rito" =>$item["rito"],
-                        "giudice" =>$item["giudice"],
-                        "delegato" =>$item["delegato"],
-                        "custode" =>$item["custode"],
-                        "curatore" =>$item["curatore"],
-                        "valorePerizia" =>$item["valorePerizia"],
-                        "dataPubblicazione" =>$item["dataPubblicazione"],
-                        "noteGeneriche" =>$item["noteGeneriche"],
-                        "datiCatastali" =>$item["datiCatastali"],
-                        "disponibilita" =>$item["disponibilita"],
-                        "importoBaseAsta" =>$item["importoBaseAsta"],
-                        "importoOffertaMinima" =>$item["importoOffertaMinima"],
-                        "noteAggiuntive" =>$item["noteAggiuntive"],
-                        "dataAsta" =>$item["dataAsta"],
-                        "linkAllegati" =>$item["linkAllegati"],
-                        "CodiceComune" =>$item["CodiceComune"],
-                        "Comune" =>$item["Comune"],
-                        "Provincia" =>$item["Provincia"],
-                        "ComuneProvinciaCompleto" =>$item["ComuneProvinciaCompleto"],
-                        "Strada" =>$item["Strada"],
-                        "Strada_testo" =>$item["Strada_testo"],
-                        "Indirizzo" =>$item["Indirizzo"],
-                        "Civico" =>$item["Civico"],
-                        "Cap" =>$item["Cap"],
-                        "Latitudine" =>$item["Latitudine"],
-                        "Longitudine" =>$item["Longitudine"],
-                        "Categoria" =>$item["Categoria"],
-                        "IDTipologia" =>$item["IDTipologia"],
-                        "NrLocali" =>$item["NrLocali"],
-                        "MQSuperficie" =>$item["MQSuperficie"],
-                        "TipoProprieta" =>$item["TipoProprieta"],
-                        "ClasseCatastale" =>$item["ClasseCatastale"],
-                        "Titolo" =>$item["Titolo"],
-                        "Testo" =>$item["Testo"] ,
-                        "TestoBreve" =>$item["TestoBreve"],
-                        "StatoImmobile" =>$item["StatoImmobile"],
-                        "immagine_URL" =>$item["immagine_URL"] ,
-                        "status" =>$item["status"] ,
-                        "Prezzo" =>$item["Prezzo"] ,
-                        "riferimentoAnnuncio" =>$item["riferimentoAnnuncio"] ,
-                        "nomeAgente" =>$item["nomeAgente"] ,
-                        "flagRichiestaVisione" =>$item["flagRichiestaVisione"] ,
-                        "dataRichiestaVisione" =>$item["dataRichiestaVisione"] ,
-                    );
-                    // Add
-                    if ($isToInsert) {
-                        array_push($arrAsteListFiltrato, $arrItem);
-                    }
-                }
-                $this->view->asteList = $arrAsteListFiltrato;
-            }
+//                    }
+//                    if ($isToInsert) {
+//                        // cap
+//                        if (isset($_POST["capComuni"]) && $_POST["capComuni"]!=null && $_POST["capComuni"]!="") {
+//                            $isToInsert = false;
+//                            foreach($_POST["capComuni"] as $cap){
+//                                if ($item["Cap"]==$cap) {
+//                                    $isToInsert = true;
+//                                }
+//                            }
+//                        }
+//                    }
+//                    if ($isToInsert) {
+//                        // codiciComuniTribunali
+//                        if (isset($_POST["codiciComuniTribunali"]) && $_POST["codiciComuniTribunali"]!=null && $_POST["codiciComuniTribunali"]!="") {
+//                            $isToInsert = false;
+//                            foreach($_POST["codiciComuniTribunali"] as $comune){
+//                                if ($item["ComuneTribunale"]== $functionsModel->ConvertCodiceIstat($comune)) {
+//                                    $isToInsert = true;
+//                                }
+//                            }
+//                        }
+//                    }
+//                    if ($isToInsert) {
+//                        // OffertaMinima DA
+//                        if (isset($_POST["offertaMinDa"]) && $_POST["offertaMinDa"]!=null && $_POST["offertaMinDa"]!="") {
+//                            if ($item["importoOffertaMinima"]<$_POST["offertaMinDa"]) {
+//                                $isToInsert = false;
+//                            }
+//                        }
+//                    }
+//                    if ($isToInsert) {
+//                        // OffertaMinima A
+//                        if (isset($_POST["offertaMinA"]) && $_POST["offertaMinA"]!=null && $_POST["offertaMinA"]!="") {
+//                            if ($item["importoOffertaMinima"]>$_POST["offertaMinA"]) {
+//                                $isToInsert = false;
+//                            }
+//                        }
+//                    }
+//                    if ($isToInsert) {
+//                        // superficie DA
+//                        if (isset($_POST["superficieDa"]) && $_POST["superficieDa"]!=null && $_POST["superficieDa"]!="") {
+//                            if ($item["MQSuperficie"]<$_POST["superficieDa"]) {
+//                                $isToInsert = false;
+//                            }
+//                        }
+//                    }
+//                    if ($isToInsert) {
+//                        // superficie A
+//                        if (isset($_POST["superficieA"]) && $_POST["superficieA"]!=null && $_POST["superficieA"]!="") {
+//                            if ($item["MQSuperficie"]>$_POST["superficieA"]) {
+//                                $isToInsert = false;
+//                            }
+//                        }
+//                    }
+//                    if ($isToInsert) {
+//                        // NrLocali DA
+//                        if (isset($_POST["NrLocaliDa"]) && $_POST["NrLocaliDa"]!=null && $_POST["NrLocaliDa"]!="") {
+//                            if ($item["NrLocali"]<$_POST["NrLocaliDa"]) {
+//                                $isToInsert = false;
+//                            }
+//                        }
+//                    }
+//                    if ($isToInsert) {
+//                        // NrLocali A
+//                        if (isset($_POST["NrLocaliA"]) && $_POST["NrLocaliA"]!=null && $_POST["NrLocaliA"]!="") {
+//                            if ($item["NrLocali"]>$_POST["NrLocaliA"]) {
+//                                $isToInsert = false;
+//                            }
+//                        }
+//                    }
+//                    if ($isToInsert) {
+//                        // Flag Pubblicità
+//                        if (isset($_POST["flagPubblicita"]) && $_POST["flagPubblicita"]!=null && $_POST["flagPubblicita"]!="") {
+////                        if ($item["NrLocali"]!=$_POST["flagPubblicita"]) {
+////                            $isToInsert = false;
+////                        }
+//                        }
+//                    }
+//                    if ($isToInsert) {
+//                        // Status Esportazione
+//                        if (isset($_POST["statusExport"]) && $_POST["statusExport"]!=null && $_POST["statusExport"]!="") {
+//                            if ($item["status"]!=$_POST["statusExport"]) {
+//                                $isToInsert = false;
+//                            }
+//                        }
+//                    }
+//
+//
+//                    if ($isToInsert) {
+//                        // Data Asta DA
+//                        if (isset($_POST["dataAstaDa"]) && $_POST["dataAstaDa"]!=null && $_POST["dataAstaDa"]!="") {
+//                            if ($item["dataAsta"]<$functionsModel->transformDateFormat(1,$_POST["dataAstaDa"])) {
+//                                $isToInsert = false;
+//                            }
+//                        }
+//                    }
+//                    if ($isToInsert) {
+//                        // Data Asta A
+//                        if (isset($_POST["dataAstaA"]) && $_POST["dataAstaA"]!=null && $_POST["dataAstaA"]!="") {
+//                            if ($item["dataAsta"]>$functionsModel->transformDateFormat(1,$_POST["dataAstaA"])) {
+//                                $isToInsert = false;
+//                            }
+//                        }
+//                    }
+//                    if ($isToInsert) {
+//                        // Categorie
+//                        if (isset($_POST["idCategorie"]) && $_POST["idCategorie"]!=null && $_POST["idCategorie"]!="") {
+//                            $isToInsert = false;
+//                            foreach($_POST["idCategorie"] as $cat){
+//                                if ($item["Categoria"]==$cat) {
+//                                    $isToInsert = true;
+//                                }
+//                            }
+//                        }
+//                    }
+//
+//                    // Set values
+//                    $arrItem = array(
+//                        "id" =>$item["id"],
+//                        "ComuneTribunale" =>$item["ComuneTribunale"],
+//                        "SiglaProvTribunale" =>$item["SiglaProvTribunale"],
+//                        "codiceComuneTribunale" =>$item["codiceComuneTribunale"],
+//                        "linkTribunale" =>$item["linkTribunale"],
+//                        "rge" =>$item["rge"],
+//                        "lotto" =>$item["lotto"],
+//                        "tipoProcedura" =>$item["tipoProcedura"],
+//                        "rito" =>$item["rito"],
+//                        "giudice" =>$item["giudice"],
+//                        "delegato" =>$item["delegato"],
+//                        "custode" =>$item["custode"],
+//                        "curatore" =>$item["curatore"],
+//                        "valorePerizia" =>$item["valorePerizia"],
+//                        "dataPubblicazione" =>$item["dataPubblicazione"],
+//                        "noteGeneriche" =>$item["noteGeneriche"],
+//                        "datiCatastali" =>$item["datiCatastali"],
+//                        "disponibilita" =>$item["disponibilita"],
+//                        "importoBaseAsta" =>$item["importoBaseAsta"],
+//                        "importoOffertaMinima" =>$item["importoOffertaMinima"],
+//                        "noteAggiuntive" =>$item["noteAggiuntive"],
+//                        "dataAsta" =>$item["dataAsta"],
+//                        "linkAllegati" =>$item["linkAllegati"],
+//                        "CodiceComune" =>$item["CodiceComune"],
+//                        "Comune" =>$item["Comune"],
+//                        "Provincia" =>$item["Provincia"],
+//                        "ComuneProvinciaCompleto" =>$item["ComuneProvinciaCompleto"],
+//                        "Strada" =>$item["Strada"],
+//                        "Strada_testo" =>$item["Strada_testo"],
+//                        "Indirizzo" =>$item["Indirizzo"],
+//                        "Civico" =>$item["Civico"],
+//                        "Cap" =>$item["Cap"],
+//                        "Latitudine" =>$item["Latitudine"],
+//                        "Longitudine" =>$item["Longitudine"],
+//                        "Categoria" =>$item["Categoria"],
+//                        "IDTipologia" =>$item["IDTipologia"],
+//                        "NrLocali" =>$item["NrLocali"],
+//                        "MQSuperficie" =>$item["MQSuperficie"],
+//                        "TipoProprieta" =>$item["TipoProprieta"],
+//                        "ClasseCatastale" =>$item["ClasseCatastale"],
+//                        "Titolo" =>$item["Titolo"],
+//                        "Testo" =>$item["Testo"] ,
+//                        "TestoBreve" =>$item["TestoBreve"],
+//                        "StatoImmobile" =>$item["StatoImmobile"],
+//                        "immagine_URL" =>$item["immagine_URL"] ,
+//                        "status" =>$item["status"] ,
+//                        "Prezzo" =>$item["Prezzo"] ,
+//                        "riferimentoAnnuncio" =>$item["riferimentoAnnuncio"] ,
+//                        "nomeAgente" =>$item["nomeAgente"] ,
+//                        "flagRichiestaVisione" =>$item["flagRichiestaVisione"] ,
+//                        "dataRichiestaVisione" =>$item["dataRichiestaVisione"] ,
+//                    );
+//                    // Add
+//                    if ($isToInsert) {
+//                        array_push($arrAsteListFiltrato, $arrItem);
+//                    }
+//                }
+//                $this->view->asteList = $arrAsteListFiltrato;
+//            }
 
         } else {
 
@@ -1725,6 +1841,10 @@ class Aste extends Controller {
             $comuniList = $comuniModel->getComuniList();
             $arrComuni = array();
             $arrComuniTribunale = array();
+            // Lista Cap
+            $capModel = new Cap_Model();
+            $capList = $capModel->getCapList();
+            $arrCap = array();
             if (is_array($comuniList) || is_object($comuniList)) {
                 // Inserisci solo Comuni presenti nelle PrefVIEW dell'Agenzia
                 if (is_array($arrAsteListAgPreFilter) || is_object($arrAsteListAgPreFilter)) {
@@ -1758,10 +1878,30 @@ class Aste extends Controller {
                 $arrComuniTribunaleList = array_intersect_key($arrComuniTribunale, $tempArr2);
             }
             $this->view->comuniTribunaleList = $arrComuniTribunaleList;
-
-
+            // Cap in base a COMUNI DISPONIBILI
+            if (is_array($capList) || is_object($capList)) {
+                if (sizeof($arrComuniList)>0) {
+                    foreach($arrComuniList as $comune){
+                        // Cap
+                        foreach($capList as $cap){
+                            $arrItem = array(
+                                "codiceIstat"=>$cap["codiceIstat"],
+                                "cap"=>$cap["cap"]
+                            );
+                            if ($functionsModel->ConvertCodiceIstat($comune["codice_istat"] ) == $functionsModel->ConvertCodiceIstat($cap["codiceIstat"] )) {
+                                array_push($arrCap, $arrItem);
+                            }
+                        }
+                    }
+                }
+            }
+            $arrCapList = array();
+            if (sizeof($arrCap)>0) {
+                $tempArr3 = array_unique(array_column($arrCap, 'cap'));
+                $arrCapList = array_intersect_key($arrCap, $tempArr3);
+            }
+            $this->view->capList = $arrCapList;
         }
-
 
 
 

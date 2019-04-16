@@ -375,7 +375,25 @@
                                             <label>Cap Immobile</label>
                                             <select data-placeholder="Seleziona Cap" name="capComuni[]"
                                                     class="chosen-select" multiple style="100%;" tabindex="4">
-
+                                                <?php
+                                                if (sizeof($this->capList)>0) {
+                                                    foreach ($this->capList as $cap) {
+                                                        $_selected = "";
+                                                        if ( isset($_POST["capComuni"])) {
+                                                            foreach ($_POST["capComuni"] as $codCap ) {
+                                                                if ($cap["cap"]==$codCap) {
+                                                                    $_selected = " selected ";
+                                                                }
+                                                            }
+                                                        }
+                                                        ?>
+                                                        <option value="<?php echo $cap["cap"] ?>" <?php echo $_selected?> >
+                                                            <?php echo $cap["cap"]; ?>
+                                                        </option>
+                                                        <?php
+                                                    }
+                                                }
+                                                ?>
                                             </select>
                                         </div>
                                     </div>
