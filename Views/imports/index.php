@@ -14,7 +14,8 @@
                             </div>
                         <?php } else { ?>
                             <div class="table-responsive">
-                               <table class="footable table table-stripped toggle-arrow-tiny">
+                               <table class="footable table table-stripped toggle-arrow-tiny"
+                                      data-limit-navigation="3">
                                     <thead>
                                     <tr>
                                         <th data-toggle="true">Id#</th>

@@ -10,6 +10,7 @@ ini_set('display_errors', 1);
 require 'Models/aste_model.php';
 require 'Models/comuni_model.php';
 require 'Models/province_model.php';
+require 'Models/cap_model.php';
 require 'Models/dbcucine_model.php';
 require 'Models/dbstrade_model.php';
 require 'Models/relasteagenzie_model.php';
@@ -397,15 +398,24 @@ class Agency extends Controller {
         }
         // Get Data
         $this->view->data = $this->model->getDataFromId($_GET["iditem"],"agency");
-        
+        $functionsModel = new Functions();
         $relAgPrefViewModel = new RelAgenziePrefView_Model();
         $this->view->relAgPrefViewList = $relAgPrefViewModel->getRelAgenziePrefList($_GET["iditem"], Null, Null);
         $comuniModel = new Comuni_Model();
         $this->view->comuniList = $comuniModel->getComuniList();
         $provModel = new Province_Model();
         $this->view->provinceList = $provModel->getProvinceList();
-        
-        // View
+        // Lista Cap
+        $capModel = new Cap_Model();
+        $capList = $capModel->getCapList();
+        $arrCapList = array();
+        if (is_array($capList) || is_object($capList)) {
+            $tempArr = array_unique(array_column($capList, 'cap'));
+            $arrCapList = array_intersect_key($capList, $tempArr);
+        }
+        $this->view->capList = $arrCapList;
+
+            // View
         $this->view->render('agency/editPrefView', true, HEADER_MAIN);
     }
     // POST: Edit Pref Vista
@@ -441,14 +451,26 @@ class Agency extends Controller {
                 $prefViewModel = new RelAgenziePrefView_Model();
                 $idRecord = $prefViewModel->create($data);
             }
-        } 
-        
+        }
         if (isset($_POST["idProvince"]) && $_POST["idProvince"]!="") {
             foreach($_POST["idProvince"] as $pref) {
                 // Set values
                 $data = array(
                     ':idAgenzia' => $_GET["iditem"],
                     ':tipoPreferenza' => "provincia",
+                    ':idOggetto' => $pref,
+                    ':status' => "on"
+                );
+                $prefViewModel = new RelAgenziePrefView_Model();
+                $idRecord = $prefViewModel->create($data);
+            }
+        }
+        if (isset($_POST["capComuni"]) && $_POST["capComuni"]!="") {
+            foreach($_POST["capComuni"] as $pref) {
+                // Set values
+                $data = array(
+                    ':idAgenzia' => $_GET["iditem"],
+                    ':tipoPreferenza' => "cap",
                     ':idOggetto' => $pref,
                     ':status' => "on"
                 );
@@ -540,6 +562,7 @@ class Agency extends Controller {
         } 
         $this->view->comuniList = $arrComuni;
         $this->view->comuniTribunaleList = $arrComuniTribunale;
+        // Province
         $provModel = new Province_Model();
         $proviceList = $provModel->getProvinceList();
         $arrProvince = array();
@@ -560,6 +583,32 @@ class Agency extends Controller {
             }
         } 
         $this->view->provinceList = $arrProvince;
+        // Cap
+        $capModel = new Cap_Model();
+        $capList = $capModel->getCapList();
+        $arrCap = array();
+        if (is_array($capList) || is_object($capList)) {
+            // Inserisci solo Cap presenti nelle PrefView
+            if (is_array($this->view->relAgPrefViewList) || is_object($this->view->relAgPrefViewList)) {
+                foreach ($capList as $cap) {
+                    $arrItem = array(
+                        "cap"=>$cap["cap"],
+                        "codiceIstat"=>$cap["codiceIstat"]
+                    );
+                    foreach ( $this->view->relAgPrefViewList as $pref ) {
+                        if ($pref["tipoPreferenza"]=="cap" && $pref["idOggetto"]==$cap["cap"] ) {
+                            array_push($arrCap, $arrItem);
+                        }
+                    }
+                }
+            }
+        }
+        $arrCapList = array();
+        if (sizeof($arrCap)>0) {
+            $tempArr = array_unique(array_column($arrCap, 'cap'));
+            $arrCapList = array_intersect_key($arrCap, $tempArr);
+        }
+        $this->view->capList = $arrCapList;
         
         // View
         $this->view->render('agency/editPref', true, HEADER_MAIN);
@@ -604,6 +653,19 @@ class Agency extends Controller {
                 $data = array(
                     ':idAgenzia' => $_GET["iditem"],
                     ':tipoPreferenza' => "provincia",
+                    ':idOggetto' => $pref,
+                    ':status' => "on"
+                );
+                $prefModel = new RelAgenziePref_Model();
+                $idRecord = $prefModel->create($data);
+            }
+        }
+        if (isset($_POST["capComuni"]) && $_POST["capComuni"]!="") {
+            foreach($_POST["capComuni"] as $pref) {
+                // Set values
+                $data = array(
+                    ':idAgenzia' =>$_GET["iditem"],
+                    ':tipoPreferenza' => "cap",
                     ':idOggetto' => $pref,
                     ':status' => "on"
                 );

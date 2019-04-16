@@ -147,7 +147,27 @@ class Exports extends Controller {
         // View
         $this->view->render('exports/details', true, HEADER_MAIN);
     }
-    
+
+    // GET: Execute Export
+    public function executeExport($error=null) {
+        // Set Active Menu
+        $this->view->mainMenu = Functions::setActiveMenu("exports");
+        // Get Errors
+        $this->view->error = Functions::getError($error);
+
+        // Checks
+        if (!$this->CheckIdItemExists($_GET["iditem"])) {
+            $this->index();
+            return false;
+        }
+        // Get Data
+        $this->view->data = $this->model->getDataFromId($_GET["iditem"]);
+
+
+        // View
+        $this->view->render('exports/details', true, HEADER_MAIN);
+    }
+
     // Check IdItem exists
     function CheckIdItemExists($idItem) {
         if (!isset($idItem)) {
@@ -179,18 +199,31 @@ class Exports extends Controller {
         if (is_array($arrAgencyListAll) || is_object($arrAgencyListAll)) {
             foreach($arrAgencyListAll as $item){
                 $trovato = true;
+
+                // STATUS VALIDO
                 if ($item["status"]!='on') {
                     $trovato = false;
                 }
+                // Filtro AGENZIE (da Export) ==>> SOLO AGENZIE Oggetto di Esportazione
+//                if (isset($_POST["idAgenzie"]) && $_POST["idAgenzie"]!=NULL) {
+//                    $trovato = false;
+//                    foreach ($_POST["idAgenzie"] as $filtroAg) {
+//                        if ($filtroAg==$item["id"]) {
+//                            $trovato = true;
+//                        }
+//                    }
+//                }
+                // INSERISCI TUTTE LE AGENZIE, ma identifica quelle che provengono dal FILTRO
+                $isAgenziaFiltrata = false;
                 if (isset($_POST["idAgenzie"]) && $_POST["idAgenzie"]!=NULL) {
-                    $trovato = false;
-                    // Filtro Agenzie
                     foreach ($_POST["idAgenzie"] as $filtroAg) {
                         if ($filtroAg==$item["id"]) {
-                            $trovato = true;
+                            $isAgenziaFiltrata = true;
                         }
                     }
                 }
+
+
                 // Set values
                 $arrItem = array(
                     'id' => $item["id"],
@@ -225,7 +258,8 @@ class Exports extends Controller {
                     'NrAnnunci' => $item["NrAnnunci"],
                     'prefFlagPubblicita' => $item["prefFlagPubblicita"],
                     'prefFlagPrezzo' => $item["prefFlagPrezzo"],
-                    'DataModifica' => $item["DataModifica"]
+                    'DataModifica' => $item["DataModifica"],
+                    'isAgenziaFiltrata' => $isAgenziaFiltrata
                 );
                 // Add
                 if ($trovato) {
@@ -243,6 +277,8 @@ class Exports extends Controller {
         // Rel_AgenziePref
         $relAgPrefModel = new RelAgenziePref_Model();
         $arrRelAgPrefList = $relAgPrefModel->getRelAgenziePrefList(Null, Null, Null);
+        // Export Details
+
         // Aste
         $asteModel = new Aste_Model();
         $arrAsteListAll = $asteModel->getAsteList(Null, Null);
@@ -299,7 +335,7 @@ class Exports extends Controller {
 //                                        $trovato = true;
 //                                    }
 //                                }
-//                            } 
+//                            }
 //                            if (isset($_POST["idComuniTribunale"]) && $_POST["idComuniTribunale"]!=NULL) {
 //                                $trovato = false;
 //                                // Filtro Com.Tribunale
@@ -308,7 +344,7 @@ class Exports extends Controller {
 //                                        $trovato = true;
 //                                    }
 //                                }
-//                            } 
+//                            }
 //                        } else {
 //                            // -------------------------------------------->>> Preferenze Agenzia su EXPORT
 //                            $preferenzeAgenzia = false;
@@ -338,7 +374,7 @@ class Exports extends Controller {
 //                                    }
 //                                }
 //                            }
-//                        } 
+//                        }
 
                         // -------------------------------------------->>> Preferenze Agenzia su EXPORT
                         // Agenzia CIOTTA
@@ -487,9 +523,39 @@ class Exports extends Controller {
             }
         }
 
+exit;
 
-        // print_r($arrImg);
+        // CREA Esportazione
+        $data = array(
+            ':createdAt' => date("Y-m-d H:i:s"),
+            ':status' => "off",
+            ':numAgenzie' => sizeof($arrAgencyList),
+            ':numAste' => sizeof($arrAsteList),
+            ':exportDate' => date('Y-m-d H:i:s')
+        );
+        $exportModel = new Exports_Model();
+        $idExport = $exportModel->create($data);
+        // Creo Dettagli Esportazione e Aggiorno Rel_AsteAgenzie
+        if ($idExport>0) {
+            foreach($arrAsteList as $asta2) {
+                // INSERT dettaglio Export
+                $data2 = array(
+                    ':idExport' => $idExport,
+                    ':idAgenzia' => $asta2["idAgenzia"],
+                    ':idAsta' => $asta2["IDImmobile"],
+                    ':createdAt' => date('Y-m-d H:i:s')
+                );
+                $exportDetModel = new ExportDetails_Model();
+                $idExpDetail = $exportDetModel->create($data2);
+            }
+        }
 
+        // View
+        $this->view->render('exports/details?idItem='.$idExport, true, HEADER_MAIN);
+
+        exit;
+
+        // ======================================================================
 
         // =============================== CREA FILE XML
         // Agenzie
@@ -578,7 +644,7 @@ class Exports extends Controller {
         }
         
     }
-    
+
     
     
     

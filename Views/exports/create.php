@@ -245,7 +245,7 @@
                                             Annulla
                                         </a>
                                         <button class="btn btn-flussi-light" type="submit" name="btnExport">
-                                            Esporta vs. Getrix
+                                            Crea Esportazione
                                         </button>
                                     </div>
                                 </div>

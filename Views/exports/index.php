@@ -14,7 +14,8 @@
                             </div>
                         <?php } else { ?>
                             <div class="table-responsive">
-                               <table class="footable table table-stripped toggle-arrow-tiny">
+                               <table class="footable table table-stripped toggle-arrow-tiny"
+                                      data-limit-navigation="3">
                                     <thead>
                                     <tr>
                                         <th data-toggle="true">Id#</th>
@@ -22,6 +23,7 @@
                                         <th class="text-center">Num. Agenzie</th>
                                         <th class="text-center">Num. Aste</th>
                                         <th class="text-center">Status</th>
+                                        <th class="text-center">Data Export</th>
                                         <th class="text-center">Dettagli</th>
                                     </tr>
                                     </thead>
@@ -36,12 +38,20 @@
                                                     <?php 
                                                     if ($item["status"]=='on') {
                                                         ?>
-                                                        <i class="fa fa-check text-success"></i>
+                                                        <span class="text-info"><i class="fa fa-check "></i> Esportata</span>
                                                         <?php
                                                     } else {
                                                         ?>
-                                                        <i class="fa fa-remove text-danger"></i>
+                                                        <i class="text-danger"><i class="fa fa-remove"></i>Non Esportata</i>
                                                         <?php
+                                                    }
+                                                    ?>
+                                                </td>
+                                                <td class="text-center">
+                                                    <?php
+                                                    if ($item["status"]=='on' && $item["exportDate"]!="0000-00-00 00:00:00"
+                                                        && $item["exportDate"]!=null) {
+                                                        echo date("d/m/y H:i:s", strtotime($item["exportDate"]));
                                                     }
                                                     ?>
                                                 </td>
@@ -55,7 +65,7 @@
                                     </tbody>
                                     <tfoot>
                                     <tr>
-                                        <td colspan="6">
+                                        <td colspan="7">
                                             <ul class="pagination float-right"></ul>
                                         </td>
                                     </tr>

@@ -44,7 +44,7 @@
                                             <div class="panel-body">
                                                 <form method="POST"  action="<?php echo URL ?>agency/executeEditPref?iditem=<?php echo  $this->data["id"] ?>" 
                                                     enctype="multipart/form-data">
-                                                  <div class="row">
+                                                    <div class="row">
                                                         <?php if ($this->error) { ?>
                                                             <div class="col-md-12 text-center">
                                                                 <p class="alert alert-danger"><strong>Oops...</strong><?php echo $this->error;?></p>
@@ -112,7 +112,7 @@
                                                                 </select>
                                                             </div>
                                                         </div>
-                                                      
+
                                                         <div class="col-md-12">
                                                             <div class="form-group">
                                                                 <label>
@@ -178,14 +178,30 @@
                                                         <div class="col-md-12">
                                                             <div class="form-group">
                                                                 <label>
-                                                                    Cap Immobile
-                                                                    <br>
-                                                                    <small>(Se non si seleziona nulla il sistema li prende tutti)</small>
+                                                                      Cap Immobile
+                                                                      <br>
+                                                                      <small>(Se non si seleziona nulla il sistema li prende tutti)</small>
                                                                 </label>
-                                                                <select data-placeholder="Seleziona Cap" name="idCap[]"
-                                                                    class="chosen-select" multiple style="width:350px;" tabindex="4">
+                                                                <select data-placeholder="Seleziona Cap" name="capComuni[]"
+                                                                      class="chosen-select" multiple style="100%;" tabindex="4">
                                                                     <?php
-//                                                                   
+                                                                    if (sizeof($this->capList)>0) {
+                                                                        foreach ($this->capList as $cap) {
+                                                                            $_selected = " ";
+                                                                            if (is_array($this->relAgPrefList) || is_object($this->relAgPrefList)) {
+                                                                                foreach ($this->relAgPrefList as $pref) {
+                                                                                    if ($pref["tipoPreferenza"]=="cap" && $pref["idOggetto"]==$cap["cap"]) {
+                                                                                        $_selected = " selected ";
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                            ?>
+                                                                            <option value="<?php echo $cap["cap"] ?>" <?php echo $_selected?> >
+                                                                                <?php echo $cap["cap"]; ?>
+                                                                            </option>
+                                                                            <?php
+                                                                        }
+                                                                    }
                                                                     ?>
                                                                 </select>
                                                             </div>
@@ -221,7 +237,7 @@
                                                                 </select>
                                                             </div>
                                                         </div>
-                                                        
+
                                                         <div class="col-md-12 text-right">
                                                             <div class="form-group">
                                                                 <a href="<?php echo URL; ?>agency/index" class="btn btn-default">
@@ -232,7 +248,7 @@
                                                                 </button>
                                                             </div>
                                                         </div>
-                                                  </div>
+                                                    </div>
 
                                               </form>
                                             </div>

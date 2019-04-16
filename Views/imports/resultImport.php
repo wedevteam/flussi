@@ -36,7 +36,7 @@
                                 <div class="col-md-12">
                                     <div class="table-responsive">
                                        <table class="footable table table-stripped toggle-arrow-tiny"
-                                               data-limit-navigation="5" data-page-size="8">
+                                              data-limit-navigation="3" data-page-size="8">
                                             <thead>
                                             <tr>
                                                 <th data-toggle="true">
