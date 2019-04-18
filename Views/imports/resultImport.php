@@ -229,7 +229,7 @@
                                                         <td><?php echo $item->Testo; ?></td>
                                                         <td class="text-center">
                                                             <?php 
-                                                            if ($item->uploadType=='uploadType') {
+                                                            if ($item->uploadType=='Nuovo') {
                                                                 ?>
                                                                 <span class="text-success">
                                                                     <?php echo $item->uploadType;?>
@@ -238,7 +238,7 @@
                                                             } else {
                                                                 ?>
                                                                 <span class="text-danger">
-                                                                    <?php echo $item->uploadType;?>
+                                                                    Asta già presente<?php //echo $item->uploadType;?>
                                                                 </span>
                                                                 <?php
                                                             }

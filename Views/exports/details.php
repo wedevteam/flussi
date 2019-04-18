@@ -10,6 +10,13 @@
                             <br>
                             <small>
                                 Id# <?php echo $this->data["id"]; ?>
+                                | Status:
+                                <?php if ( $this->data["status"]=="on"): ?>
+                                    <span class="text-white">ESPORTATA</span>
+                                <?php endif ?>
+                                <?php if ( $this->data["status"]=="off"): ?>
+                                    <span class="text-white">NON ESPORTATA</span>
+                                <?php endif ?>
                             </small>
                         </h5>
                     </div>
@@ -19,41 +26,56 @@
                                 <p class="alert alert-info">Non ci dati</p>
                             </div>
                         <?php } else { ?>
-                            <div class="table-responsive">
-                               <table class="footable table table-stripped toggle-arrow-tiny"
-                                      data-limit-navigation="3">
-                                    <thead>
-                                    <tr>
-                                        <th data-toggle="true">Agenzia</th>
-                                        <th>Asta</th>
-                                    </tr>
-                                    </thead>
-                                    <tbody>
-                                        <?php foreach ($this->detailsList as $item) { ?>
+                            <div class="row">
+                                <?php if ($this->data["status"]=="off"): ?>
+                                    <div class="col-md-12 text-right">
+                                        <form method="POST" action="<?php echo URL ?>exports/executeExport?iditem=<?php echo $this->data["id"] ?>">
+                                            <input name="idExport" value="<?php echo $this->data["id"] ?>">
+                                            <button class="btn btn-flussi-light" type="submit">
+                                                Esporta
+                                            </button>
+                                        </form>
+                                    </div>
+                                <?php endif ?>
+                                <div class="col-md-12">
+                                    <div class="table-responsive">
+                                        <table class="footable table table-stripped toggle-arrow-tiny"
+                                               data-limit-navigation="3">
+                                            <thead>
                                             <tr>
-                                                <td>
-                                                    <?php echo $item["nomeAgenzia"]; ?>
-                                                    <a target="_blank" href="<?php echo URL ?>agency/edit?iditem=<?php echo $item["idAgenzia"] ?>">
-                                                         <i class="fa fa-external-link"></i>
-                                                    </a>
-                                                </td>
-                                                <td>
-                                                    <?php echo $item["nomeAsta"]; ?>
-                                                    <a target="_blank" href="<?php echo URL ?>aste/edit?iditem=<?php echo $item["idAsta"] ?>">
-                                                         <i class="fa fa-external-link"></i>
-                                                    </a>
+                                                <th data-toggle="true">Agenzia</th>
+                                                <th>Asta</th>
+                                            </tr>
+                                            </thead>
+                                            <tbody>
+                                            <?php foreach ($this->detailsList as $item) { ?>
+                                                <tr>
+                                                    <td>
+                                                        <?php echo $item["nomeAgenzia"]; ?>
+                                                        <a target="_blank" href="<?php echo URL ?>agency/edit?iditem=<?php echo $item["idAgenzia"] ?>">
+                                                            <i class="fa fa-external-link"></i>
+                                                        </a>
+                                                    </td>
+                                                    <td>
+                                                        <?php echo $item["nomeAsta"]; ?>
+                                                        <a target="_blank" href="<?php echo URL ?>aste/edit?iditem=<?php echo $item["idAsta"] ?>">
+                                                            <i class="fa fa-external-link"></i>
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            <?php } ?>
+                                            </tbody>
+                                            <tfoot>
+                                            <tr>
+                                                <td colspan="2">
+                                                    <ul class="pagination float-right"></ul>
                                                 </td>
                                             </tr>
-                                        <?php } ?>
-                                    </tbody>
-                                    <tfoot>
-                                    <tr>
-                                        <td colspan="2">
-                                            <ul class="pagination float-right"></ul>
-                                        </td>
-                                    </tr>
-                                    </tfoot>
-                                </table>
+                                            </tfoot>
+                                        </table>
+                                    </div>
+                                </div>
+
                             </div>
                         <?php } ?>
                     </div>

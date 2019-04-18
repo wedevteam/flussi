@@ -221,7 +221,7 @@
                                 <div class="col-md-3">
                                     <div class="form-group">
                                         <label>Flag Pubblicità</label>
-                                        <select class="form-control">
+                                        <select class="form-control" name="flagPubblicita">
                                             <option value="">Tutti</option>
                                             <option value="all">In Pubblicità</option>
                                             <option value="anyone">Non In Pubblicità</option>
@@ -231,7 +231,7 @@
                                 <div class="col-md-3">
                                     <div class="form-group">
                                         <label>Status Esportazione</label>
-                                        <select class="form-control">
+                                        <select class="form-control" name="statusExport">
                                             <option value="">Tutti</option>
                                             <option value="importato">Esportato</option>
                                             <option value="non importato">Non Esportato</option>

@@ -20,7 +20,6 @@
                                     <tr>
                                         <th data-toggle="true">Id#</th>
                                         <th class="text-center">Creazione</th>
-                                        <th class="text-center">Num. Agenzie</th>
                                         <th class="text-center">Num. Aste</th>
                                         <th class="text-center">Status</th>
                                         <th class="text-center">Data Export</th>
@@ -32,7 +31,6 @@
                                             <tr>
                                                 <td><?php echo $item["id"]; ?></td>
                                                 <td class="text-center"><?php echo date("d/m/y H:i:s", strtotime($item["createdAt"])); ?></td>
-                                                <td class="text-center"><?php echo $item["numAgenzie"]; ?></td>
                                                 <td class="text-center"><?php echo $item["numAste"]; ?></td>
                                                 <td class="text-center">
                                                     <?php 
@@ -65,7 +63,7 @@
                                     </tbody>
                                     <tfoot>
                                     <tr>
-                                        <td colspan="7">
+                                        <td colspan="6">
                                             <ul class="pagination float-right"></ul>
                                         </td>
                                     </tr>

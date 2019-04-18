@@ -4,7 +4,7 @@
  * Concesso in licenza d'uso a LA FENICE IMMOBILIARE
  * Sviluppato da WeDev s.a.s di Ricci Stefano & C.
  */
-
+// error_reporting(E_ALL | E_PARSE);
 // Modelli
 require 'Models/aste_model.php';
 require 'Models/agency_model.php';
@@ -93,11 +93,13 @@ class Exports extends Controller {
     }
     
     // GET: Details
-    public function details($error=null) {
+    public function details($error=null, $message=null) {
         // Set Active Menu
         $this->view->mainMenu = Functions::setActiveMenu("exports");
         // Get Errors
         $this->view->error = Functions::getError($error);
+        // Get Message
+        $this->view->message = Functions::getMessages($message);
         
         // Checks
         if (!$this->CheckIdItemExists($_GET["iditem"])) {
@@ -162,16 +164,353 @@ class Exports extends Controller {
         $this->view->error = Functions::getError($error);
 
         // Checks
-        if (!$this->CheckIdItemExists($_GET["iditem"])) {
+        if (!$this->CheckIdItemExists($_GET["iditem"]) || $_GET["iditem"]!=$_POST["idExport"]) {
             $this->index();
             return false;
         }
         // Get Data
         $this->view->data = $this->model->getDataFromId($_GET["iditem"]);
+        // Dettaglio Esportazione
+        $arrExportDet = array();
+        $exportDetailsModel = new ExportDetails_Model();
+        $resExDetails = $exportDetailsModel->getExportDetList($_GET["iditem"]);
+        if (is_array($resExDetails) || is_object($resExDetails)) {
+            foreach($resExDetails as $detail){
+                $arrItem = array(
+                    "id" => $detail["id"],
+                    "idExport" => $detail["idExport"],
+                    "idAgenzia" => $detail["idAgenzia"],
+                    "idAsta" => $detail["idAsta"]
+                );
+                array_push($arrExportDet,$arrItem);
+            }
+        }
+        if (sizeof($arrExportDet)==0) {
+            // Error
+            $this->index();
+            return false;
+        }
+
+        // =============================== GET DATI IN MEMORIA
+        // Dati Platform per Invio (FTP)
+        $ftpHost = $this->view->platformData["ftpHost"];
+        $ftpUser = $this->view->platformData["ftpUser"];
+        $ftpPw = $this->view->platformData["ftpPw"];
+        $adminPrefFlagPubb = $this->view->platformData["prefFlagPubblicita"];
+        $adminPrefFlagPrezzo = $this->view->platformData["prefFlagPrezzo"];
+        // Agenzie
+        $agenzieModel = new Agency_Model();
+        $arrAgencyListAll = $agenzieModel->getUsersListByRole("agency");
+        $arrAgencyList = array();
+        if (is_array($arrAgencyListAll) || is_object($arrAgencyListAll)) {
+            foreach($arrAgencyListAll as $item){
+                // Set values
+                $arrItem = array(
+                    'id' => $item["id"],
+                    'firstName' => $item["firstName"],
+                    'lastName' => $item["lastName"],
+                    'companyName' => $item["companyName"],
+                    'tipoContratto' => $item["tipoContratto"],
+                    'email' => $item["email"],
+                    'IdGestionale' => $item["IdGestionale"],
+                    'IdAgenzia' => $item["IdAgenzia"],
+                    'NomePubblicita' => $item["NomePubblicita"],
+                    'DescrizioneAgenzia' => $item["DescrizioneAgenzia"],
+                    'CodiceNazione' => $item["CodiceNazione"],
+                    'CodiceComune' => $item["CodiceComune"],
+                    'Indirizzo' => $item["Indirizzo"],
+                    'Civico' => $item["Civico"],
+                    'Cap' => $item["Cap"],
+                    'Latitudine' => $item["Latitudine"],
+                    'Longitudine' => $item["Longitudine"],
+                    'Comune' => $item["Comune"],
+                    'SiglaProvincia' => $item["SiglaProvincia"],
+                    'IdComune' => $item["IdComune"],
+                    'Telefono' => $item["Telefono"],
+                    'Cellulare' => $item["Cellulare"],
+                    'Fax' => $item["Fax"],
+                    'URLLogo' => $item["URLLogo"],
+                    'URLImmagine' => $item["URLImmagine"],
+                    'CodicePortale' => $item["CodicePortale"],
+                    'CodiceRelazione' => $item["CodiceRelazione"],
+                    'DataInizio' => $item["DataInizio"],
+                    'DataFine' => $item["DataFine"],
+                    'NrAnnunci' => $item["NrAnnunci"],
+                    'prefFlagPubblicita' => $item["prefFlagPubblicita"],
+                    'prefFlagPrezzo' => $item["prefFlagPrezzo"],
+                    'DataModifica' => $item["DataModifica"]
+                );
+                // Add
+                array_push($arrAgencyList, $arrItem);
+            }
+        }
+        if (sizeof($arrAgencyList)==0) {
+            $this->details(ER_EXPORT_AGENZIE_NONPRESENTI);
+            return false;
+        }
+        // Rel_AsteAgenzie
+        $relAsteAgenzieModel = new RelAsteAgenzie_Model();
+        $arrRelAsteAgList = $relAsteAgenzieModel->getRelAsteAgenzieList(Null, Null,Null);
+        $functionsModel = new Functions();
+
+        // Leggi tutte le aste
+        $asteModel = new Aste_Model();
+        $arrAsteListAll = $asteModel->getAsteList(Null, Null);
+        $today = date("Y-m-d");
+        $arrAsteList = array();
+        if (is_array($arrAsteListAll) || is_object($arrAsteListAll)) {
+            foreach ($arrAgencyList as $agency) {
+                foreach($arrAsteListAll as $asta) {
+                    if ($asta["status"]=="on" && $asta["dataAsta"]>$today) {
+                        $trovato = false;
+
+                        // TROVA DATI SPECIFICI
+                        // -------------------------------------------->>> Set PREZZO e Valori IMMOBILE in base a Preferenze Admin o Agenzia
+                        // Prezzo
+                        if ($adminPrefFlagPrezzo=="BaseAsta") {
+                            $Prezzo = $asta["importoBaseAsta"];
+                        } else {
+                            $Prezzo = $asta["importoOffertaMinima"];
+                        }
+                        // Testo
+                        $Testo = $asta["Testo"];
+                        $TestoBreve = $asta["TestoBreve"];
+                        $immagine_URL = $asta["immagine_URL"];
+                        $immagineDataModifica = $asta["immagine_DataModifica"];
+                        // Trova Record dettaglio Rel_AsteAgenzie
+                        if (is_array($arrRelAsteAgList) || is_object($arrRelAsteAgList)) {
+                            foreach ($arrRelAsteAgList as $relAsteAg) {
+                                if ($relAsteAg["idAgenzia"] == $agency["id"] && $relAsteAg["idAsta"] == $asta["id"]) {
+                                    // Prezzo
+                                    if ($relAsteAg["preferenzaPrezzo"]=="BaseAsta") {
+                                        $Prezzo = $asta["importoBaseAsta"];
+                                    } else {
+                                        $Prezzo = $asta["importoOffertaMinima"];
+                                    }
+                                    // Testo
+                                    $Testo = $relAsteAg["descrizione"];
+                                    $TestoBreve = substr($Testo,0,555)."...";
+                                    $immagine_URL = $relAsteAg["immagine_URL"];
+                                    $immagineDataModifica = $relAsteAg["DataModifica"];
+                                    // FlagPubb
+                                    $flagPubb = $relAsteAg["flagPubblicita"];
+                                    // Status
+                                    $Status =  $relAsteAg["statusImportazione"];
+                                }
+                            }
+                        }
+
+                        // -------------------------------------------->>> VERIFICA SE ASTA E' ALL'INTERNO DEL DETTAGLIO DELL'ESPORTAZIONE
+                        foreach($arrExportDet as $dettaglioExport){
+                            if ($arrExportDet["idAsta"]==$asta["id"] && $arrExportDet["idAgenzia"]==$agency["id"]) {
+                                $trovato = true;
+                            }
+                        }
 
 
-        // View
-        $this->view->render('exports/details', true, HEADER_MAIN);
+                        // Set values
+                        $arrItem = array(
+                            'IDImmobile' => $asta["id"],
+                            'idAgenzia' => $agency["id"],
+                            'IDAgenzia' => $agency["IdAgenzia"],                // IdAgenzia
+                            'Lingua' => $asta["Descrizioni_Lingua"],
+                            'CodiceNazione' => $asta["CodiceNazione"],
+                            'CodiceComune' => $asta["CodiceComune"],
+                            'CodiceQuartiere' => $asta["CodiceQuartiere"],
+                            'CodiceLocalita' => $asta["CodiceLocalita"],
+                            'Strada' => $asta["Strada"],
+                            'Indirizzo' => $asta["Indirizzo"],
+                            'Civico' => $asta["Civico"],
+                            'PubblicaCivico' => $asta["PubblicaCivico"],
+                            'Cap' => $asta["Cap"],
+                            'PubblicaIndirizzo' => $asta["PubblicaIndirizzo"],
+                            'Latitudine' => $asta["Latitudine"],
+                            'Longitudine' => $asta["Longitudine"],
+                            'PubblicaMappa' => $asta["PubblicaMappa"],
+                            'Contratto' => $asta["Contratto"],
+                            'DurataContratto' => $asta["DurataContratto"],
+                            'Categoria' => $asta["Categoria"],
+                            'IDTipologia' => $asta["IDTipologia"],
+                            'NrLocali' => $asta["NrLocali"],
+                            'Prezzo' => $Prezzo,                                    // In base a Pref.Agenzia (se presenti) o Admin
+                            'TrattativaRiservata' => $asta["TrattativaRiservata"],
+                            'MQSuperficie' => $asta["MQSuperficie"],
+                            'Riferimento' => $asta["id"]."-".$agency["id"],         // IdAsta+IdAgenzia
+                            'TipoProprieta' => $asta["TipoProprieta"],
+                            'Asta' => $asta["Asta"],
+                            'Pregio' => $asta["Pregio"],
+                            'SpeseMensili' => $asta["SpeseMensili"],
+                            'ClasseCatastale' => $asta["ClasseCatastale"],
+                            'RenditaCatastale' => $asta["RenditaCatastale"],
+                            'URLPlanimetria' => $asta["URLPlanimetria"],
+                            'URLVirtualTour' => $asta["URLVirtualTour"],
+                            'Collaborazioni' => $asta["Collaborazioni"],
+                            'DataInserimento' => $asta["DataInserimento"],
+                            'DataModifica' => $asta["DataModifica"],                // QUI
+                            'Descrizioni_Lingua' => $asta["Descrizioni_Lingua"],
+                            'Titolo' => $asta["Titolo"],
+                            'Testo' => $Testo,                                      // In base a Pref.Agenzia
+                            'TestoBreve' => $TestoBreve,                            // In base a Pref.Agenzia
+                            'StatoImmobile' => $asta["StatoImmobile"],
+                            'Piano' => $asta["Piano"],
+                            'PianoFuoriTerra' => $asta["PianoFuoriTerra"],
+                            'PianiEdificio' => $asta["PianiEdificio"],
+                            'NrCamereLetto' => $asta["NrCamereLetto"],
+                            'NrAltreCamere' => $asta["NrAltreCamere"],
+                            'NrBagni' => $asta["NrBagni"],
+                            'Cucina' => $asta["Cucina"],
+                            'NrTerrazzi' => $asta["NrTerrazzi"],
+                            'NrBalconi' => $asta["NrBalconi"],
+                            'Ascensore' => $asta["Ascensore"],
+                            'NrAscensori' => $asta["NrAscensori"],
+                            'BoxAuto' => $asta["BoxAuto"],
+                            'BoxIncluso' => $asta["BoxIncluso"],
+                            'NrBox' => $asta["NrBox"],
+                            'NrPostiAuto' => $asta["NrPostiAuto"],
+                            'Cantina' => $asta["Cantina"],
+                            'Portineria' => $asta["Portineria"],
+                            'GiardinoCondominiale' => $asta["GiardinoCondominiale"],
+                            'GiardinoPrivato' => $asta["GiardinoPrivato"],
+                            'AriaCondizionata' => $asta["AriaCondizionata"],
+                            'Riscaldamento' => $asta["Riscaldamento"],
+                            'TipoImpiantoRiscaldamento' => $asta["TipoImpiantoRiscaldamento"],
+                            'TipoRiscaldamento' => $asta["TipoRiscaldamento"],
+                            'SpeseRiscaldamento' => $asta["SpeseRiscaldamento"],
+                            'Arredamento' => $asta["Arredamento"],
+                            'StatoArredamento' => $asta["StatoArredamento"],
+                            'AnnoCostruzione' => $asta["AnnoCostruzione"],
+                            'TipoCostruzione' => $asta["TipoCostruzione"],
+                            'StatoCostruzione' => $asta["StatoCostruzione"],
+                            'Piscina' => $asta["Piscina"],
+                            'Tennis' => $asta["Tennis"],
+                            'VideoCitofono' => $asta["VideoCitofono"],
+                            'Allarme' => $asta["Allarme"],
+                            'Idromassaggio' => $asta["Idromassaggio"],
+                            'Caminetto' => $asta["Caminetto"],
+                            'FibraOttica' => $asta["FibraOttica"],
+                            'ClasseEnergetica' => $asta["ClasseEnergetica"],
+                            'IndicePrestazioneEnergetica' => $asta["IndicePrestazioneEnergetica"],
+                            'IDImmagine' => $asta["IDImmagine"],
+                            'immagine_URL' => $immagine_URL,                            // In base a Pref. Agenzia
+                            'immagine_DataModifica' => $immagineDataModifica,           // In base a Pref. Agenzia
+                            'immagine_Posizione' => $asta["immagine_Posizione"],
+                            'immagine_TipoFoto' => $asta["immagine_TipoFoto"],
+                            'immagine_Titolo' => $asta["immagine_Titolo"]
+                        );
+                        // Add
+                        if ($trovato) {
+                            array_push($arrAsteList, $arrItem);
+                        }
+                    }
+
+                }
+            }
+        }
+
+        if (sizeof($arrAsteList)==0) {
+            $this->details(ER_EXPORT_IMM_NONPRESENTI);
+            return false;
+        }
+
+        // Leggi tutte le immagini
+        $relImgModel = new RelAsteImg_Model();
+        $resImg = $relImgModel->getRelAsteImgAllList();
+        $arrImg = array();
+        if (is_array($resImg) || is_object($resImg)) {
+            foreach ($resImg as $img){
+                $arrItem = array(
+                    'id' => $img["id"],
+                    'idAsta' => $img["idAsta"],
+                    'idAgenzia' => $img["idAgenzia"],
+                    'fonte' => $img["fonte"],
+                    'immagine_URL' => $img["immagine_URL"],
+                    'IDImmagine' => $img["IDImmagine"],
+                    'immagine_Titolo' => $img["immagine_Titolo"],
+                    'immagine_TipoFoto' => $img["immagine_TipoFoto"],
+                    'immagine_Posizione' => $img["immagine_Posizione"],
+                    'DataModifica' => $img["DataModifica"],
+                    'DataModifica_d' => $img["DataModifica_d"]
+                );
+                // Add
+                array_push($arrImg,$arrItem);
+            }
+        }
+
+
+        // PRENDI DATI DI TUTTE LE ASTE PRESENTI NELL'EXPORT
+
+        // PREDISPONI ESPORTAZINE VS. GETRIX
+        // =============================== CREA FILE XML
+        // Agenzie
+        $this->createXMLfile_Agenzie($arrAgencyList,"20a50f55e1a79d0616fa21a80c262928");
+        // Immobili
+        $this->createXMLfile_Immobili($arrAsteList,"20a50f55e1a79d0616fa21a80c262928",$arrImg);
+
+
+
+
+        // =============================== INVIO FILE XML A GETRIX VIA FTP
+        //$ftp_server = "feed.immobiliarefull.com";
+        $ftp_conn = ftp_connect($ftpHost) or die("Errore di connessione con il Server Immobiliare.it");
+        $login = ftp_login($ftp_conn, $ftpUser, $ftpPw);
+
+        // DEV ==========================================
+        $file_xml_ag = 'xml/agenzieTEST.xml';
+        $file_xml_imm = 'xml/immobiliTEST.xml';
+        // PROD  ==========================================
+        // $file_xml_ag = 'xml/agenzie.xml';
+        // $file_xml_imm = 'xml/immobili.xml';
+
+
+        // INVIO
+        if (ftp_put($ftp_conn, '/agenzieTEST.xml', $file_xml_ag, FTP_ASCII) && ftp_put($ftp_conn, '/immobiliTEST.xml', $file_xml_imm, FTP_ASCII)) {
+            // INVIO OK: Update Status Esportazione
+
+            // close connection
+            ftp_close($ftp_conn);
+
+            // ---------------------->>>>>>>>>>>>>>>>>> UPDATE DATI
+            // UPDATE Esportazione come ESPORTATA
+            $data = array(
+                ':exportDate' => date("Y-m-d H:i:s"),
+                ':status' => "on"
+            );
+            $exportModel = new Exports_Model();
+            $exportModel->updateData($data);
+
+            // Aggiorno Rel_AsteAgenzie con Status
+            foreach ($arrAsteList as $asta2) {
+                // Update Rel_AsteAgenzie
+                if (is_array($arrRelAsteAgList) || is_object($arrRelAsteAgList)) {
+                    foreach ($arrRelAsteAgList as $rel) {
+                        if ($rel["idAgenzia"] == $asta2["idAgenzia"] && $rel["idAsta"] == $asta2["IDImmobile"]) {
+                            $dataImport = date("Y-m-d H:i:s");
+                            $data = array(
+                                ':statusImportazione' => "importato",
+                                ':dataUltimaEsportazione_d' => $dataImport,
+                                ':dataUltimaEsportazione' => substr($dataImport, 0, 10) . 'T' . substr($dataImport, 11, 19)
+                            );
+                            $where = " id=:id ";
+                            $parameters = array();
+                            $parameters[":id"] = $rel["id"];
+                            $relModel = new RelAsteAgenzie_Model();
+                            $relModel->updateData($data, $parameters, $where);
+                        }
+                    }
+                }
+            }
+            // ---------------------->>>>>>>>>>>>>>>>>> END UPDATE DATI
+
+            // View
+            $this->details(null,EXPORT_SUCCESS);
+
+        } else {
+            $this->details(ER_EXPORT_IMM_NONPRESENTI);
+            return false;
+        }
+
+
+
     }
 
     // Check IdItem exists
@@ -283,7 +622,30 @@ class Exports extends Controller {
         // Rel_AgenziePref
         $relAgPrefModel = new RelAgenziePref_Model();
         $arrRelAgPrefList = $relAgPrefModel->getRelAgenziePrefList(Null, Null, Null);
+        $functionsModel = new Functions();
+
         // Export Details
+        $exportModel = new Exports_Model();
+        $resExports = $exportModel->getExportsListByStatus("on");
+        $arrExportDet = array();
+        if (is_array($resExports) || is_object($resExports)) {
+            foreach($resExports as $export){
+                $exportDetailsModel = new ExportDetails_Model();
+                $resExDetails = $exportDetailsModel->getExportDetList($export["id"]);
+                if (is_array($resExDetails) || is_object($resExDetails)) {
+                    foreach($resExDetails as $detail){
+                        $arrItem = array(
+                            "id" => $detail["id"],
+                            "idExport" => $detail["idExport"],
+                            "idAgenzia" => $detail["idAgenzia"],
+                            "idAsta" => $detail["idAsta"]
+                        );
+                        array_push($arrExportDet,$arrItem);
+                    }
+                }
+            }
+        }
+
 
         // Aste
         $asteModel = new Aste_Model();
@@ -294,8 +656,9 @@ class Exports extends Controller {
             foreach ($arrAgencyList as $agency) { 
                 foreach($arrAsteListAll as $asta) {
                     if ($asta["status"]=="on" && $asta["dataAsta"]>$today) {
-                        $trovato = true;
-                        
+                        $trovato = false;
+
+                        // TROVA DATI SPECIFICI
                         // -------------------------------------------->>> Set PREZZO e Valori IMMOBILE in base a Preferenze Admin o Agenzia
                         // Prezzo
                         if ($adminPrefFlagPrezzo=="BaseAsta") {
@@ -323,80 +686,213 @@ class Exports extends Controller {
                                     $TestoBreve = substr($Testo,0,555)."...";
                                     $immagine_URL = $relAsteAg["immagine_URL"];
                                     $immagineDataModifica = $relAsteAg["DataModifica"];
+                                    // FlagPubb
+                                    $flagPubb = $relAsteAg["flagPubblicita"];
+                                    // Status
+                                    $Status =  $relAsteAg["statusImportazione"];
                                 }
                             }
                         }
 
 
-                        // FILTRI SU IMPORT diversi da PrefAgenzia
-                        // Ha priorità il Filtro di ADMIN in questo momento, altrimenti quello delle Agenzie
-//                        if ( (isset($_POST["idComuni"]) && $_POST["idComuni"]!=NULL)
-//                                || (isset($_POST["idComuniTribunale"]) && $_POST["idComuniTribunale"]!=NULL) ) {
-//                            // FILTRI ATTIVI HANNO PRIORITA RISPETTO AD AGENZIA
-//                            if (isset($_POST["idComuni"]) && $_POST["idComuni"]!=NULL) {
-//                                $trovato = false;
-//                                // Filtro Comune Immobile
-//                                foreach ($_POST["idComuni"] as $filtroComune) {
-//                                    if ($filtroComune==$asta["CodiceComune"]) {
-//                                        $trovato = true;
-//                                    }
-//                                }
-//                            }
-//                            if (isset($_POST["idComuniTribunale"]) && $_POST["idComuniTribunale"]!=NULL) {
-//                                $trovato = false;
-//                                // Filtro Com.Tribunale
-//                                foreach ($_POST["idComuniTribunale"] as $filtroComuneTrib) {
-//                                    if ($filtroComuneTrib==$asta["CodiceComuneTribunale"]) {
-//                                        $trovato = true;
-//                                    }
-//                                }
-//                            }
-//                        } else {
-//                            // -------------------------------------------->>> Preferenze Agenzia su EXPORT
-//                            $preferenzeAgenzia = false;
-//                            if (is_array($arrRelAgPrefList) || is_object($arrRelAgPrefList)) {
-//                                foreach ($arrRelAgPrefList as $pref) {
-//                                    if ($pref["idAgenzia"]==$agency["id"]) {
-//                                        $preferenzeAgenzia = true;
-//                                        $trovato = false;
-//                                        if ($pref["tipoPreferenza"]=="comune" && $pref["idOggetto"]==$asta["CodiceComune"] ) {
-//                                            $trovato = true;
-//                                        }
-//                                        if ($pref["tipoPreferenza"]=="comuneTribunale" && $pref["idOggetto"]==$asta["CodiceComune"] ) {
-//                                            $trovato = true;
-//                                        }
-//                                        if ($pref["tipoPreferenza"]=="provincia" && $pref["idOggetto"]==$asta["Provincia"] ) {
-//                                            $trovato = true;
-//                                        }
-//                                        if ($pref["tipoPreferenza"]=="provinciaTribunale" && $pref["idOggetto"]==$asta["SiglaProvTribunale"] ) {
-//                                            $trovato = true;
-//                                        }
-//                                        if ($pref["tipoPreferenza"]=="cap" && $pref["idOggetto"]==$asta["Cap"] ) {
-//                                            $trovato = true;
-//                                        }
-//                                        if ($pref["tipoPreferenza"]=="tipologia" && $pref["idOggetto"]==$asta["IDTipologia"] ) {
-//                                            $trovato = true;
-//                                        }
-//                                    }
-//                                }
-//                            }
-//                        }
+
+                        // -------------------------------------------->>> VERIFICA SE ASTA VA INSERITA NELL'ESPORTAZIONE
+                        // 1) VERIFICA SE L'ASTA E' STATA ESPORTATA PRECEDENTEMENTE
+                        if (sizeof($arrExportDet)>0) {
+                            foreach ($arrExportDet as $export ) {
+                                if ($export["idAgenzia"]==$agency["id"] && $export["idAsta"]==$asta["id"]) {
+                                    // E' stata esportata precedentemente
+                                    $trovato = true;
+                                }
+                            }
+                        }
+//                        echo '<br>idAgenzia: '.$agency["id"];
+////                        echo '<br>idAsta: '.$asta["id"];
+////                        echo '<br>trovato: '.$trovato;
+
+                        // 2) VERIFICA SE L'ASTA RIENTRA tra le Preferenze di Esportazione dell'AGENZIA
+                        //    SOLO PER LE AGENZIE COINVOLTE nell'esportazione (isAgenziaFiltrata = true)
+                        if ($agency["isAgenziaFiltrata"] && !$trovato) {
+                            $trovatoComune = false;
+                            $trovatoCap = false;
+                            $trovatoProv = false;
+                            $trovatoComuneT = false;
+                            // Leggo preferenze Esportazione Agenzia
+                            $relAgPrefViewModel = new RelAgenziePref_Model();
+                            $relAgPrefViewListComuni = $relAgPrefViewModel->getRelAgenziePrefList($agency["id"], "comune",NULL);
+                            $relAgPrefViewListProv = $relAgPrefViewModel->getRelAgenziePrefList($agency["id"], "provincia",NULL);
+                            $relAgPrefViewListCap = $relAgPrefViewModel->getRelAgenziePrefList($agency["id"], "cap",NULL);
+                            $relAgPrefViewListComuniT = $relAgPrefViewModel->getRelAgenziePrefList($agency["id"], "comuneTribunale",NULL);
+                            // Comuni
+                            if (is_array($relAgPrefViewListComuni) || is_object($relAgPrefViewListComuni)) {
+                                foreach($relAgPrefViewListComuni as $pref){
+                                    $prefViewComune = $functionsModel->ConvertCodiceIstat($pref["idOggetto"]);
+                                    if ($prefViewComune == $asta["CodiceComune"]) {
+                                        $trovatoComune = true;
+                                    }
+                                }
+                            } else {
+                                $trovatoComune = true;
+                            }
+                            // Comune Tribunale
+                            if (is_array($relAgPrefViewListComuniT) || is_object($relAgPrefViewListComuniT)) {
+                                foreach($relAgPrefViewListComuniT as $pref){
+                                    $prefViewComune = $functionsModel->ConvertCodiceIstat($pref["idOggetto"]);
+                                    if ($prefViewComune == $asta["codiceComuneTribunale"]) {
+                                        $trovatoComuneT = true;
+                                    }
+                                }
+                            } else {
+                                $trovatoComuneT = true;
+                            }
+                            // Prov
+                            if (is_array($relAgPrefViewListProv) || is_object($relAgPrefViewListProv)) {
+                                foreach($relAgPrefViewListProv as $pref){
+                                    if ($pref["idOggetto"] == $asta["Provincia"]) {
+                                        $trovatoProv = true;
+                                    }
+                                }
+                            } else {
+                                $trovatoProv = true;
+                            }
+                            // Cap
+                            if (is_array($relAgPrefViewListCap) || is_object($relAgPrefViewListCap)) {
+                                foreach($relAgPrefViewListCap as $pref){
+                                    if ($pref["idOggetto"] == $asta["Cap"]) {
+                                        $trovatoCap = true;
+                                    }
+                                }
+                            } else {
+                                $trovatoCap = true;
+                            }
+
+                            // Filtro finale
+                            if ($trovatoComune && $trovatoCap && $trovatoComuneT && $trovatoProv) {
+                                $trovato = true;
+                            }
+                        }
+
+
+
+
+                        // -------------------------------------------->>> VERIFICA SE ASTA RIENTRA NEI PARAMETRI FILTRATI NELL'ESPORTAZIONE
+                        // OffertaMinima DA
+                        if ($trovato) {
+                            if (isset($_POST["offertaMinDa"]) && $_POST["offertaMinDa"]!=null && $_POST["offertaMinDa"]!="") {
+                                $trovato = false;
+                                if ($asta["importoOffertaMinima"]<$_POST["offertaMinDa"]) {
+                                    $trovato = true;
+                                }
+                            }
+                        }
+                        // OffertaMinima A
+                        if ($trovato) {
+                            if (isset($_POST["offertaMinA"]) && $_POST["offertaMinA"]!=null && $_POST["offertaMinA"]!="") {
+                                $trovato = false;
+                                if ($asta["importoOffertaMinima"]>$_POST["offertaMinA"]) {
+                                    $trovato = true;
+                                }
+                            }
+                        }
+                        // DATA ASTA DA
+                        if ($trovato) {
+                            if (isset($_POST["dataAstaDa"]) && $_POST["dataAstaDa"]!=null && $_POST["dataAstaDa"]!="") {
+                                $trovato = false;
+                                if ($asta["dataAsta"]<$functionsModel->transformDateFormat(1,$_POST["dataAstaDa"])) {
+                                    $trovato = false;
+                                }
+                            }
+                        }
+                        // DATA ASTA A
+                        if ($trovato) {
+                            if (isset($_POST["dataAstaA"]) && $_POST["dataAstaA"]!=null && $_POST["dataAstaA"]!="") {
+                                $trovato = false;
+                                if ($asta["dataAsta"]>$functionsModel->transformDateFormat(1,$_POST["dataAstaA"])) {
+                                    $trovato = false;
+                                }
+                            }
+                        }
+                        // CATEGORIA
+                        if ($trovato) {
+                            if (isset($_POST["idCategorie"]) && $_POST["idCategorie"]!=null && $_POST["idCategorie"]!="") {
+                                $trovato = false;
+                                foreach($_POST["idCategorie"] as $cat){
+                                    if ($asta["Categoria"]==$cat) {
+                                        $trovato = true;
+                                    }
+                                }
+                            }
+                        }
+                        // SUPERFICIE DA
+                        if ($trovato) {
+                            if (isset($_POST["superficieDa"]) && $_POST["superficieDa"]!=null && $_POST["superficieDa"]!="") {
+                                $trovato = false;
+                                if ($asta["MQSuperficie"]<$_POST["superficieDa"]) {
+                                    $trovato = false;
+                                }
+                            }
+                        }
+                        // SUPERFICIE A
+                        if ($trovato) {
+                            if (isset($_POST["superficieA"]) && $_POST["superficieA"]!=null && $_POST["superficieA"]!="") {
+                                $trovato = false;
+                                if ($asta["MQSuperficie"]>$_POST["superficieA"]) {
+                                    $trovato = false;
+                                }
+                            }
+                        }
+                        // NUM.LOCALI DA
+                        if ($trovato) {
+                            if (isset($_POST["NrLocaliDa"]) && $_POST["NrLocaliDa"]!=null && $_POST["NrLocaliDa"]!="") {
+                                $trovato = false;
+                                if ($asta["NrLocali"]<$_POST["NrLocaliDa"]) {
+                                    $trovato = false;
+                                }
+                            }
+                        }
+                        // NUM.LOCALI DA
+                        if ($trovato) {
+                            if (isset($_POST["NrLocaliA"]) && $_POST["NrLocaliA"]!=null && $_POST["NrLocaliA"]!="") {
+                                $trovato = false;
+                                if ($asta["NrLocali"]>$_POST["NrLocaliA"]) {
+                                    $trovato = false;
+                                }
+                            }
+                        }
+                        // FLAG PUBBLICITA
+                        if ($trovato) {
+                            if (isset($_POST["flagPubblicita"]) && $_POST["flagPubblicita"]!=null && $_POST["flagPubblicita"]!="") {
+                                $trovato = false;
+                                if ($flagPubb!=$_POST["flagPubblicita"]) {
+                                    $trovato = false;
+                                }
+                            }
+                        }
+                        // STATUS EXPORT
+                        if ($trovato) {
+                            if (isset($_POST["statusExport"]) && $_POST["statusExport"]!=null && $_POST["statusExport"]!="") {
+                                $trovato = false;
+                                if ($Status!=$_POST["statusExport"]) {
+                                    $trovato = false;
+                                }
+                            }
+                        }
 
                         // -------------------------------------------->>> Preferenze Agenzia su EXPORT
                         // Agenzia CIOTTA
-                        if ($agency["id"]==4) {
-                            $trovato = false;
-                            if ($asta["Provincia"]=="MI" ) {
-                                $trovato = true;
-                            }
-                        }
-                        // Agenzia LUFFARELLI
-                        if ($agency["id"]==3) {
-                            $trovato = false;
-                            if ($asta["codiceComuneTribunale"]=="058111" || $asta["codiceComuneTribunale"]=="058032" ) {
-                                $trovato = true;
-                            }
-                        }
+//                        if ($agency["id"]==4) {
+//                            $trovato = false;
+//                            if ($asta["Provincia"]=="MI" ) {
+//                                $trovato = true;
+//                            }
+//                        }
+//                        // Agenzia LUFFARELLI
+//                        if ($agency["id"]==3) {
+//                            $trovato = false;
+//                            if ($asta["codiceComuneTribunale"]=="058111" || $asta["codiceComuneTribunale"]=="058032" ) {
+//                                $trovato = true;
+//                            }
+//                        }
 
 
                         // Set values
@@ -496,8 +992,10 @@ class Exports extends Controller {
                     
                 }
             }
-
         }
+//        echo '<br>Q';
+//        echo '<br>';
+//        print_r($arrAsteList);
 
 
         if (sizeof($arrAsteList)==0) {
@@ -529,7 +1027,7 @@ class Exports extends Controller {
             }
         }
 
-exit;
+
 
         // CREA Esportazione
         $data = array(
@@ -557,9 +1055,9 @@ exit;
         }
 
         // View
-        $this->view->render('exports/details?idItem='.$idExport, true, HEADER_MAIN);
+        $this->index();
+        return false;
 
-        exit;
 
         // ======================================================================
 

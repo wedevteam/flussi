@@ -351,7 +351,7 @@ class Agency extends Controller {
         // Nuova Passw
         $functions = new Functions();
         $password = substr($functions->genera_hash(),0,12);
-        $passwordCript = md5($password);
+        $passwordCript = Hash::create('sha256', $password, HASH_KEY);
         
         // Set values
         $data = array(

@@ -29,7 +29,20 @@ class Exports_Model extends Model {
         $orderBy = " id DESC ";
         return $this->db->selectWithOrder(TAB_EXPORTS, $data, $where, $parameters, false, $orderBy, NULL);
     }
-    
+
+    // Get User list
+    public function getExportsListByStatus($status) {
+        $data = ' * ';
+        $where = ' status!=:statusDeleted ';
+        $parameters = array();
+        $parameters[":statusDeleted"] = 'deleted';
+        if ($status!=null) {
+            $where .= ' AND status=:status ';
+            $parameters[":status"] = $status;
+        }
+        $orderBy = " id DESC ";
+        return $this->db->selectWithOrder(TAB_EXPORTS, $data, $where, $parameters, false, $orderBy, NULL);
+    }
     
     // INSERT - Nuovo record (Return ID)
     public function create($data) {
@@ -37,7 +50,14 @@ class Exports_Model extends Model {
         $this->db->insert(TAB_EXPORTS, $data);
         return $this->db->lastInsertId();
     }
-    
+
+    // UPDATE - Aggiorna dati
+    public function updateData($data,$parameters,$where) {
+        // Execute
+        $this->db->update(TAB_EXPORTS, $data, $where, $parameters);
+        return true;
+
+    }
     
     // SELECT - Get Data from ID
     public function getDataFromId($id) {

@@ -110,6 +110,8 @@ define ('ER_GENERICO_TEXT',"Qualcosa è andato storto! Riprova...");
 // Modifiche salvate
 define ('MESS_MODIFICHE_SALVATE',99);
 define ('MESS_MODIFICHE_SALVATE_TEXT',"Modifiche salvate con successo!");
+define ('EXPORT_SUCCESS',100);
+define ('EXPORT_SUCCESS_TEXT',"Esportazione avvenuta con successo!");
 
 
 

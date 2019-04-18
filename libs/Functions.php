@@ -233,6 +233,9 @@ class Functions extends Model {
             case MESS_MODIFICHE_SALVATE:
                 return MESS_MODIFICHE_SALVATE_TEXT;
                 break;
+            case EXPORT_SUCCESS:
+                return EXPORT_SUCCESS_TEXT;
+                break;
 
             default:
                 break;
