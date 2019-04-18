@@ -350,7 +350,7 @@ class Agency extends Controller {
         
         // Nuova Passw
         $functions = new Functions();
-        $password = substr($functions->genera_hash(),0,10);
+        $password = substr($functions->genera_hash(),0,12);
         $passwordCript = md5($password);
         
         // Set values
@@ -361,10 +361,9 @@ class Agency extends Controller {
         $parameters = array(
             ':id' => $_GET["iditem"]
         );
-        
+
         // Update
         if ($this->model->updateData($data,$parameters,$where)) {
-            
             //Invia email
             $to      = $this->view->data["email"]; 
             $subject = 'Credenziali Accesso | '.$this->view->platformData["siteName"];

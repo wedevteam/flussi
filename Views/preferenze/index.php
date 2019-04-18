@@ -114,37 +114,6 @@
                                 <div class="col-md-12">
                                     <div class="form-group">
                                         <label>
-                                            Provincia Immobile
-                                            <br>
-                                            <small>(Se non si seleziona nulla il sistema le prende tutte)</small>
-                                        </label>
-                                        <select data-placeholder="Seleziona Provincia" name="idProvince[]"
-                                            class="chosen-select" multiple style="width:350px;" tabindex="4">
-                                            <?php
-                                            if (is_array($this->provinceList) || is_object($this->provinceList)) {
-                                                foreach ($this->provinceList as $item) {
-                                                    $_selected = " ";
-                                                    if (is_array($this->relAgPrefList) || is_object($this->relAgPrefList)) {
-                                                        foreach ($this->relAgPrefList as $pref) {
-                                                            if ($pref["tipoPreferenza"]=="provincia" && $pref["idOggetto"]==$item["sigla"]) {
-                                                                $_selected = " selected ";
-                                                            }
-                                                        }
-                                                    }
-                                                    ?>
-                                                    <option value="<?php echo $item["sigla"]; ?>" <?php echo $_selected?> >
-                                                        <?php echo $item["nome"]." (".$item["sigla"].")";?>
-                                                    </option>
-                                                    <?php
-                                                }
-                                            }
-                                            ?>
-                                        </select>
-                                    </div>
-                                </div>
-                                <div class="col-md-12">
-                                    <div class="form-group">
-                                        <label>
                                             Cap Immobile
                                             <br>
                                             <small>(Se non si seleziona nulla il sistema li prende tutti)</small>
@@ -165,6 +134,37 @@
                                                     ?>
                                                     <option value="<?php echo $cap["cap"] ?>" <?php echo $_selected?> >
                                                         <?php echo $cap["cap"]; ?>
+                                                    </option>
+                                                    <?php
+                                                }
+                                            }
+                                            ?>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-12">
+                                    <div class="form-group">
+                                        <label>
+                                            Provincia Immobile
+                                            <br>
+                                            <small>(Se non si seleziona nulla il sistema le prende tutte)</small>
+                                        </label>
+                                        <select data-placeholder="Seleziona Provincia" name="idProvince[]"
+                                            class="chosen-select" multiple style="width:350px;" tabindex="4">
+                                            <?php
+                                            if (is_array($this->provinceList) || is_object($this->provinceList)) {
+                                                foreach ($this->provinceList as $item) {
+                                                    $_selected = " ";
+                                                    if (is_array($this->relAgPrefList) || is_object($this->relAgPrefList)) {
+                                                        foreach ($this->relAgPrefList as $pref) {
+                                                            if ($pref["tipoPreferenza"]=="provincia" && $pref["idOggetto"]==$item["sigla"]) {
+                                                                $_selected = " selected ";
+                                                            }
+                                                        }
+                                                    }
+                                                    ?>
+                                                    <option value="<?php echo $item["sigla"]; ?>" <?php echo $_selected?> >
+                                                        <?php echo $item["nome"]." (".$item["sigla"].")";?>
                                                     </option>
                                                     <?php
                                                 }

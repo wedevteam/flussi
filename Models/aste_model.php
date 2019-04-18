@@ -165,6 +165,19 @@ class Aste_Model extends Model {
         // Return
         return $result;
     }
+
+    // Get Lista ASTE PER FILTRI
+    public function getAsteListByFiltering($data,$where,$parameters,$orderBy) {
+        if ($orderBy==NULL) {
+            $orderBy = " id DESC ";
+        }
+
+        $result = $this->db->selectWithOrder(TAB_ASTE, $data, $where, $parameters, false, $orderBy, NULL);
+
+        // Return
+        return $result;
+    }
+
     
     
     // INSERT - Nuovo record (Return ID)

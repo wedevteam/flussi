@@ -49,18 +49,119 @@ class Aste extends Controller {
         $this->view->error = Functions::getError($error);
         
         // Get Data
+        $functionsModel = new Functions();
         $asteModel = new Aste_Model();
-        $arrAsteListAll = $asteModel->getAsteList(null," id DESC ");
-        if ($this->view->userLogged["role"]!="admin") {
+
+        // GET ASTE LIST
+        if ($this->view->userLogged["role"]=="admin") {
+            $arrAsteListAll = $asteModel->getAsteList(null," id DESC ");
+        } else {
             $relAsAgModel = new RelAsteAgenzie_Model();
             $arrAsteAgenziaList = $relAsAgModel->getRelAsteAgenzieList($this->view->userLogged["id"], Null, Null);
             $relAgPrefViewModel = new RelAgenziePrefView_Model();
             $relAgPrefViewList = $relAgPrefViewModel->getRelAgenziePrefList($this->view->userLogged["id"], NULL,NULL);
             $arrAsteListAgPreFilter =array();
+            if (is_array($relAgPrefViewList) || is_object($relAgPrefViewList)) {
+                $relAgPrefViewListComuni = $relAgPrefViewModel->getRelAgenziePrefList($this->view->userLogged["id"], "comune",NULL);
+                $relAgPrefViewListProv = $relAgPrefViewModel->getRelAgenziePrefList($this->view->userLogged["id"], "provincia",NULL);
+                $relAgPrefViewListCap = $relAgPrefViewModel->getRelAgenziePrefList($this->view->userLogged["id"], "cap",NULL);
+                $relAgPrefViewListComuniT = $relAgPrefViewModel->getRelAgenziePrefList($this->view->userLogged["id"], "comuneTribunale",NULL);
+
+                // Setup query
+                $data = ' * ';
+                $where = ' status!=:statusDeleted ';
+                $parameters = array();
+                $parameters[":statusDeleted"] = 'deleted';
+
+                // Comune
+                $whereComuni = "";
+                if (is_array($relAgPrefViewListComuni) || is_object($relAgPrefViewListComuni)) {
+                    $whereComuni = " ( ";
+                    $i = 0;
+                    foreach($relAgPrefViewListComuni as $prefView){
+                        $i++;
+                        $prefViewComune = $functionsModel->ConvertCodiceIstat($prefView["idOggetto"]);
+                        $whereComuni .= ' CodiceComune=:CodiceComune'.$i." ";
+                        $parameters[":CodiceComune".$i] = $prefViewComune;
+                        if ($i==sizeof($relAgPrefViewListComuni)) {
+                            $whereComuni .= ") ";
+                        } else {
+                            $whereComuni .= " OR ";
+                        }
+                    }
+                }
+                // Provincia
+                $whereProv = "";
+                if (is_array($relAgPrefViewListProv) || is_object($relAgPrefViewListProv)) {
+                    $whereProv = " ( ";
+                    $i = 0;
+                    foreach($relAgPrefViewListProv as $prefView){
+                        $i++;
+                        $whereProv .= ' Provincia=:Provincia'.$i." ";
+                        $parameters[":Provincia".$i] = $prefView["idOggetto"];
+                        if ($i==sizeof($relAgPrefViewListProv)) {
+                            $whereProv .= ") ";
+                        } else {
+                            $whereProv .= " OR ";
+                        }
+                    }
+                }
+                // Cap
+                $whereCap = "";
+                if (is_array($relAgPrefViewListCap) || is_object($relAgPrefViewListCap)) {
+                    $whereCap = " ( ";
+                    $i = 0;
+                    foreach($relAgPrefViewListCap as $prefView){
+                        $i++;
+                        $whereCap .= ' Cap=:Cap'.$i." ";
+                        $parameters[":Cap".$i] = $prefView["idOggetto"];
+                        if ($i==sizeof($relAgPrefViewListCap)) {
+                            $whereCap .= ") ";
+                        } else {
+                            $whereCap .= " OR ";
+                        }
+                    }
+                }
+                // ComuneT
+                $whereComuniT = "";
+                if (is_array($relAgPrefViewListComuniT) || is_object($relAgPrefViewListComuniT)) {
+                    $whereComuniT = " ( ";
+                    $i = 0;
+                    foreach($relAgPrefViewListComuniT as $prefView){
+                        $i++;
+                        $prefViewComune = $functionsModel->ConvertCodiceIstat($prefView["idOggetto"]);
+                        $whereComuniT .= ' codiceComuneTribunale=:codiceComuneTribunale'.$i." ";
+                        $parameters[":codiceComuneTribunale".$i] = $prefViewComune;
+                        if ($i==sizeof($relAgPrefViewListComuniT)) {
+                            $whereComuniT .= ") ";
+                        } else {
+                            $whereComuniT .= " OR ";
+                        }
+                    }
+                }
+
+                if ($whereComuni!="") {
+                    $where .= " AND " . $whereComuni;
+                }
+                if ($whereProv!="") {
+                    $where .= " AND " . $whereProv;
+                }
+                if ($whereCap!="") {
+                    $where .= " AND " . $whereCap;
+                }
+                if ($whereComuniT!="") {
+                    $where .= " AND " . $whereComuniT;
+                }
+
+                // Get data
+                $arrAsteListAll = $asteModel->getAsteListByFiltering($data,$where,$parameters,null);
+            }
         }
-        $functionsModel = new Functions();
-        
         $arrAsteList = array();
+
+
+
+
         if (is_array($arrAsteListAll) || is_object($arrAsteListAll)) {
             foreach ($arrAsteListAll as $item) {
                 $toInsert = true;
@@ -85,56 +186,29 @@ class Aste extends Controller {
                 // Img
                 $immagineURL = $item["immagine_URL"];
                 if ($this->view->userLogged["role"]!="admin") {
-                    // Pref View
-                    if (is_array($relAgPrefViewList) || is_object($relAgPrefViewList)) {
-                        $toInsert = false;
-                        foreach ($relAgPrefViewList as $prefView) {
-                            // Comune
-                            if ($prefView["tipoPreferenza"]=="comune") {
-                                $prefViewComune = $functionsModel->ConvertCodiceIstat($prefView["idOggetto"]);
-                                if ($prefViewComune==$item["CodiceComune"]) {
-                                    $toInsert = true;
+                    if (is_array($arrAsteAgenziaList) || is_object($arrAsteAgenziaList)) {
+                        foreach ($arrAsteAgenziaList as $rel) {
+                            if ($rel["idAsta"]==$item["id"]) {
+                                // Prezzo
+                                if ($rel["preferenzaPrezzo"]=="OffertaMinima") {
+                                    $Prezzo = $item["importoOffertaMinima"];
+                                } else {
+                                    $Prezzo = $item["importoBaseAsta"];
                                 }
-                            }
-                            // Provincia
-                            if ($prefView["tipoPreferenza"]=="provincia" && $prefView["idOggetto"]==$item["Provincia"]) {
-                                $toInsert = true;
-                            }
-                            // ComuneTribunale
-                            if ($prefView["tipoPreferenza"]=="comuneTribunale") {
-                                $prefViewComuneTribunale = $functionsModel->ConvertCodiceIstat($prefView["idOggetto"]);
-                                if ($prefViewComuneTribunale==$item["codiceComuneTribunale"]) {
-                                    $toInsert = true;
-                                }
-                            }
-                        }
-                    }
-                    
-                    if ($toInsert) {
-                        if (is_array($arrAsteAgenziaList) || is_object($arrAsteAgenziaList)) {
-                            foreach ($arrAsteAgenziaList as $rel) {
-                                if ($rel["idAsta"]==$item["id"]) { 
-                                    // Prezzo
-                                    if ($rel["preferenzaPrezzo"]=="OffertaMinima") {
-                                        $Prezzo = $item["importoOffertaMinima"];
-                                    } else {
-                                        $Prezzo = $item["importoBaseAsta"];
-                                    }
-                                    // Status
-                                    $Status =  $rel["statusImportazione"];
-                                    // Rif.Annuncio
-                                    $RifAnnuncio = $rel["riferimentoAnnuncio"];
-                                    // Testo
-                                    $Testo = $rel["descrizione"];
-                                    // Nome Agente
-                                    $nomeAgente = $rel["nomeAgente"];
-                                    // Rich.Visita
-                                    $flagRichiestaVisione = $rel["flagRichiestaVisione"];
-                                    // Data richiesta visione
-                                    $dataRichiestaVisione =  $rel["dataRichiestaVisione"];
-                                    // Immagine
-                                    $immagineURL = $rel["immagine_URL"];
-                                }
+                                // Status
+                                $Status =  $rel["statusImportazione"];
+                                // Rif.Annuncio
+                                $RifAnnuncio = $rel["riferimentoAnnuncio"];
+                                // Testo
+                                $Testo = $rel["descrizione"];
+                                // Nome Agente
+                                $nomeAgente = $rel["nomeAgente"];
+                                // Rich.Visita
+                                $flagRichiestaVisione = $rel["flagRichiestaVisione"];
+                                // Data richiesta visione
+                                $dataRichiestaVisione =  $rel["dataRichiestaVisione"];
+                                // Immagine
+                                $immagineURL = $rel["immagine_URL"];
                             }
                         }
                     }
@@ -215,6 +289,14 @@ class Aste extends Controller {
                             $toInsert = true;
                         }
                     }
+                    // Rge
+                    if (isset($_POST["rgeFilter"]) && $_POST["rgeFilter"]!=""  && $_POST["rgeFilter"]!=null) {
+                        $toInsert = false;
+                        if ($_POST["rgeFilter"]==$item["rge"]) {
+                            $toInsert = true;
+                        }
+                    }
+
                 }
                 
                 // Add
@@ -231,43 +313,21 @@ class Aste extends Controller {
         $arrComuni = array();
         $arrComuniTribunale = array();
         if (is_array($comuniList) || is_object($comuniList)) {
-            if ($this->view->userLogged["role"]=="admin") {
-                // Inserisci solo Comuni presenti nelle aste
-                if (is_array($arrAsteListAll) || is_object($arrAsteListAll)) {
-                    foreach ($comuniList as $comune) {
-                        foreach ( $arrAsteListAll as $asta ) {
-                            $arrItem = array(
-                                "nome"=>$comune["nome"],
-                                "siglaprovincia"=>$comune["siglaprovincia"],
-                                "codice_istat"=>$comune["codice_istat"],
-                                "id"=>$comune["id"]
-                            );
-                            if ($asta["CodiceComune"] == $functionsModel->ConvertCodiceIstat($comune["codice_istat"]) ) {
-                                array_push($arrComuni, $arrItem);
-                            }
-                            if ($asta["codiceComuneTribunale"] == $functionsModel->ConvertCodiceIstat($comune["codice_istat"])) {
-                                array_push($arrComuniTribunale, $arrItem);
-                            }
+            // Inserisci solo Comuni presenti nelle aste
+            if (is_array($arrAsteListAll) || is_object($arrAsteListAll)) {
+                foreach ($comuniList as $comune) {
+                    foreach ( $arrAsteListAll as $asta ) {
+                        $arrItem = array(
+                            "nome"=>$comune["nome"],
+                            "siglaprovincia"=>$comune["siglaprovincia"],
+                            "codice_istat"=>$comune["codice_istat"],
+                            "id"=>$comune["id"]
+                        );
+                        if ($asta["CodiceComune"] == $functionsModel->ConvertCodiceIstat($comune["codice_istat"]) ) {
+                            array_push($arrComuni, $arrItem);
                         }
-                    }
-                }
-            } else {
-                // Inserisci solo Comuni presenti nelle PrefVIEW dell'Agenzia
-                if (is_array($arrAsteListAgPreFilter) || is_object($arrAsteListAgPreFilter)) {
-                    foreach ($comuniList as $comune) {
-                        foreach ( $arrAsteListAgPreFilter as $asta ) {
-                            $arrItem = array(
-                                "nome"=>$comune["nome"],
-                                "siglaprovincia"=>$comune["siglaprovincia"],
-                                "codice_istat"=>$comune["codice_istat"],
-                                "id"=>$comune["id"]
-                            );
-                            if ($asta["CodiceComune"] == $functionsModel->ConvertCodiceIstat($comune["codice_istat"]) ) {
-                                array_push($arrComuni, $arrItem);
-                            }
-                            if ($asta["codiceComuneTribunale"] == $functionsModel->ConvertCodiceIstat($comune["codice_istat"])) {
-                                array_push($arrComuniTribunale, $arrItem);
-                            }
+                        if ($asta["codiceComuneTribunale"] == $functionsModel->ConvertCodiceIstat($comune["codice_istat"])) {
+                            array_push($arrComuniTribunale, $arrItem);
                         }
                     }
                 }

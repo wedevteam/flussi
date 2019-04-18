@@ -80,7 +80,13 @@ class Exports extends Controller {
         $comuniModel = new Comuni_Model();
         $this->view->comuniList = $comuniModel->getComuniList();
         $capModel = new Cap_Model();
-        $this->view->capList = $capModel->getCapList();
+        $arrCap = $capModel->getCapList();
+        $arrCapList = array();
+        if (sizeof($arrCap)>0) {
+            $tempArr = array_unique(array_column($arrCap, 'cap'));
+            $arrCapList = array_intersect_key($arrCap, $tempArr);
+        }
+        $this->view->capList = $arrCapList;
         
         // View
         $this->view->render('exports/create', true, HEADER_MAIN);
@@ -952,10 +958,8 @@ exit;
                     $BoxIncluso = $dom_Immobili->createElement('BoxIncluso', $asta['BoxIncluso']); 
                     $Residenziale->appendChild($BoxIncluso);
                 }
-                if ($asta['NrBox']!=0) {
-                    $NrBox = $dom_Immobili->createElement('NrBox', $asta['NrBox']); 
-                    $Residenziale->appendChild($NrBox);
-                }
+                $NrBox = $dom_Immobili->createElement('NrBox', $asta['NrBox']);
+                $Residenziale->appendChild($NrBox);
                 if ($asta['NrPostiAuto']!=0) {
                     $NrPostiAuto = $dom_Immobili->createElement('NrPostiAuto', $asta['NrPostiAuto']); 
                     $Residenziale->appendChild($NrPostiAuto);

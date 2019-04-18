@@ -147,6 +147,37 @@
                                                         <div class="col-md-12">
                                                             <div class="form-group">
                                                                 <label>
+                                                                    Cap Immobile
+                                                                    <br>
+                                                                    <small>(Se non si seleziona nulla il sistema li prende tutti)</small>
+                                                                </label>
+                                                                <select data-placeholder="Seleziona Cap" name="capComuni[]"
+                                                                        class="chosen-select" multiple style="100%;" tabindex="4">
+                                                                    <?php
+                                                                    if (sizeof($this->capList)>0) {
+                                                                        foreach ($this->capList as $cap) {
+                                                                            $_selected = " ";
+                                                                            if (is_array($this->relAgPrefList) || is_object($this->relAgPrefList)) {
+                                                                                foreach ($this->relAgPrefList as $pref) {
+                                                                                    if ($pref["tipoPreferenza"]=="cap" && $pref["idOggetto"]==$cap["cap"]) {
+                                                                                        $_selected = " selected ";
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                            ?>
+                                                                            <option value="<?php echo $cap["cap"] ?>" <?php echo $_selected?> >
+                                                                                <?php echo $cap["cap"]; ?>
+                                                                            </option>
+                                                                            <?php
+                                                                        }
+                                                                    }
+                                                                    ?>
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-12">
+                                                            <div class="form-group">
+                                                                <label>
                                                                     Provincia Immobile
                                                                     <br>
                                                                     <small>(Se non si seleziona nulla il sistema le prende tutte)</small>
@@ -167,37 +198,6 @@
                                                                             ?>
                                                                             <option value="<?php echo $item["sigla"]; ?>" <?php echo $_selected?> >
                                                                                 <?php echo $item["nome"]." (".$item["sigla"].")";?>
-                                                                            </option>
-                                                                            <?php
-                                                                        }
-                                                                    }
-                                                                    ?>
-                                                                </select>
-                                                            </div>
-                                                        </div>
-                                                        <div class="col-md-12">
-                                                            <div class="form-group">
-                                                                <label>
-                                                                      Cap Immobile
-                                                                      <br>
-                                                                      <small>(Se non si seleziona nulla il sistema li prende tutti)</small>
-                                                                </label>
-                                                                <select data-placeholder="Seleziona Cap" name="capComuni[]"
-                                                                      class="chosen-select" multiple style="100%;" tabindex="4">
-                                                                    <?php
-                                                                    if (sizeof($this->capList)>0) {
-                                                                        foreach ($this->capList as $cap) {
-                                                                            $_selected = " ";
-                                                                            if (is_array($this->relAgPrefList) || is_object($this->relAgPrefList)) {
-                                                                                foreach ($this->relAgPrefList as $pref) {
-                                                                                    if ($pref["tipoPreferenza"]=="cap" && $pref["idOggetto"]==$cap["cap"]) {
-                                                                                        $_selected = " selected ";
-                                                                                    }
-                                                                                }
-                                                                            }
-                                                                            ?>
-                                                                            <option value="<?php echo $cap["cap"] ?>" <?php echo $_selected?> >
-                                                                                <?php echo $cap["cap"]; ?>
                                                                             </option>
                                                                             <?php
                                                                         }

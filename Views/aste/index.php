@@ -13,7 +13,7 @@
                     <div class="ibox-content">
                         <form method="POST"  action="<?php echo URL ?>aste/index">
                             <div class="row">
-                                <div class="col-md-4">
+                                <div class="col-md-3">
                                     <div class="form-group">
                                         <label>Comune Immobile</label>
                                         <select class="form-control" name="codiceComuneFilter">
@@ -40,9 +40,9 @@
                                         </select>
                                     </div>
                                 </div>
-                                <div class="col-md-4">
+                                <div class="col-md-3">
                                     <div class="form-group">
-                                        <label>Comune Tribunale</label>
+                                        <label>Tribunale</label>
                                         <select class="form-control" name="codiceComuneTribunaleFilter">
                                             <option value="0"  <?php if (isset($_POST["codiceComuneTribunaleFilter"]) && $_POST["codiceComuneTribunaleFilter"]==0) {echo "selected";} ?> >
                                                 Tutti
@@ -68,6 +68,14 @@
                                     </div>
                                 </div>
                                 <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label>Rge</label>
+                                        <input class="form-control"
+                                               placeholder="Cerca per RGE" name="rgeFilter"
+                                               value="<?php if (isset($_POST["rgeFilter"])) {echo $_POST["rgeFilter"];} ?>" >
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
                                     <div class="form-group text-right" style="margin-top:30px;">
                                         <button class="btn btn-flussi-light" type="submit" name="btnSearch">
                                             Filtra
@@ -94,8 +102,6 @@
                                    placeholder="Cerca nella tabella">
                             <hr/>
                             <div class="table-responsive">
-                                <!--<table class="footable table table-striped table-bordered table-hover dataTables-example"
-                                      data-limit-navigation="3">-->
                                <table class="footable table table-stripped toggle-arrow-tiny"
                                       data-limit-navigation="3">
                                     <thead>
