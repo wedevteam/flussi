@@ -139,9 +139,6 @@ class Imports extends Controller {
         $target_file = $_POST["target_file"];
         $this->view->target_file = $target_file;
         
-        // Elimina tutte le IMPORT che non hanno ASTE correlate
-        
-        
         // Inserisci Nuova IMPORT
         $data = array(
             ':createdAt' => date("Y-m-d H:i:s"),
@@ -1269,11 +1266,104 @@ class Imports extends Controller {
                             $where = " id=:id ";
                             $parameters[":id"] = $nuovoImmobile->id;
 
+//                            if ($nuovoImmobile->rge=="2297/2015") {
+//                                echo '<br>QUI: data asta nuovao immobile'.$nuovoImmobile->dataAsta;
+//                                echo '<br>QUI: data asta vecchio immobile'.$imm["dataAsta"];
+//                            }
+
                             // Aggiorna SOLO SE dataAstaNuova>dataAsta su DB
                             if ($nuovoImmobile->dataAsta>$imm["dataAsta"]) {
+
+//                                if ($nuovoImmobile->rge=="2297/2015") {
+//                                    echo '<br>QUI333: ';
+//                                }
+
                                 // UPDATE
                                 $astaModel = new Aste_Model();
                                 $astaModel->updateDataFromImport($data,$parameters,$where);
+
+                                // EMAIL APP.TO ASTA ====================================
+                                // Invia Email app.to ASTA alle Agenzie che hanno flaggato il campo
+                                if (is_array($relAsteAgenzie) || is_object($relAsteAgenzie)) {
+                                    foreach($relAsteAgenzie as $rel){
+                                        if ($rel["idAsta"]==$nuovoImmobile->id && $rel["isNoty"]=="on") {
+
+//                                            if ($nuovoImmobile->rge=="2297/2015") {
+//                                                echo '<br>QUI INVIO EMAIL: ';
+//                                            }
+
+
+                                            $funcionsModel = new Functions();
+                                            // Predisponi dati per Email//Convert MYSQL datetime and construct iCal start, end and issue dates
+                                            $meeting_date = $nuovoImmobile->dataAsta." 10:00:00";
+                                            $meeting_duration = 3600; // 1h
+                                            $meetingstamp = STRTOTIME($meeting_date . " UTC");
+                                            $dtstart= GMDATE("Ymd\THis\Z",$meetingstamp);
+                                            $dtend= GMDATE("Ymd\THis\Z",$meetingstamp+$meeting_duration);
+                                            $todaystamp = GMDATE("Ymd\THis\Z");
+                                            $meeting_location = $nuovoImmobile->ComuneProvinciaCompleto." - ".$nuovoImmobile->Strada_testo." ".$nuovoImmobile->Indirizzo." ".$nuovoImmobile->Civico;
+                                            $meeting_description = "ASTA ".$meeting_location;
+                                            // Invia Email
+                                            //Create unique identifier
+                                            $cal_uid = DATE('Ymd').'T'.DATE('His')."-".RAND()."@ym-dev.com";
+
+                                            //Create Mime Boundry
+                                            $mime_boundary = "----App.to ASTA----".MD5(TIME());
+
+                                            // Predisponi INVIO
+                                            $to      = "pamela.palazzini@wedevteam.com";
+                                            $subject = 'Appuntamento ASTA | '.$this->view->platformData["siteName"];
+                                            include ('public/template/utente_apptoasta.php');
+                                            $headers = "From: ".$this->view->platformData["emailFromDesc"]." <".$this->view->platformData["emailFrom"].">". "\r\n";
+                                            $headers .= "MIME-Version: 1.0\r\n";
+                                            // $headers .= "Content-type: text/html; charset=UTF-8";
+                                            $headers .= "Content-Type: multipart/alternative; boundary=\"$mime_boundary\"\n";
+                                            $headers .= "Content-class: urn:content-classes:calendarmessage\n";
+
+                                            //Create Email Body (HTML)
+                                            $message = "";
+                                            $message .= "--$mime_boundary\n";
+                                            $message .= "Content-Type: text/html; charset=UTF-8\n";
+                                            $message .= "Content-Transfer-Encoding: 8bit\n\n";
+
+                                            $message .= "<html>\n";
+                                            $message .= "<body>\n";
+                                            $message .= '<p>Gentile Agenzia,</p>';
+                                            $message .= '<p>'.$this->view->platformData["siteName"]." ti invia appuntamento della data dell'Asta dell'Immobile di </p>".$meeting_location;
+                                            $message .= "</body>\n";
+                                            $message .= "</html>\n";
+                                            $message .= "--$mime_boundary\n";
+
+                                            //Create ICAL Content (Google rfc 2445 for details and examples of usage)
+                                            $ical =    'BEGIN:VCALENDAR
+                                                    PRODID:-//Microsoft Corporation//Outlook 11.0 MIMEDIR//EN
+                                                    VERSION:2.0
+                                                    METHOD:PUBLISH
+                                                    BEGIN:VEVENT
+                                                    ORGANIZER:MAILTO:'.$this->view->platformData["emailFrom"].'
+                                                    DTSTART:'.$dtstart.'
+                                                    DTEND:'.$dtend.'
+                                                    LOCATION:'.$meeting_location.'
+                                                    TRANSP:OPAQUE
+                                                    SEQUENCE:0
+                                                    UID:'.$cal_uid.'
+                                                    DTSTAMP:'.$todaystamp.'
+                                                    DESCRIPTION:'.$meeting_description.'
+                                                    SUMMARY:'.$subject.'
+                                                    PRIORITY:5
+                                                    CLASS:PUBLIC
+                                                    END:VEVENT
+                                                    END:VCALENDAR';
+                                            $message .= 'Content-Type: text/calendar;name="meeting.ics";method=REQUEST\n';
+                                            $message .= "Content-Transfer-Encoding: 8bit\n\n";
+                                            $message .= $ical;
+
+                                            // INVIO EMAIL
+                                            $funcionsModel->sendEmailWithResult ($to, $subject, $message, $headers);
+                                        }
+                                    }
+                                }
+                                // ====================================
                             }
 
                             
@@ -1295,11 +1385,9 @@ class Imports extends Controller {
                 array_push($arrImmobili, $nuovoImmobile);
             }
         }
-//        if ($tipoElaborazione!='test') {
-//
-//            echo '<br>fine';
-//            exit;
-//        }
+        if ($tipoElaborazione!='test') {
+            exit;
+        }
         // Return
         return $arrImmobili;
     }

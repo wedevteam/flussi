@@ -50,6 +50,7 @@ END PAGE
     <script src="<?php echo URL_THEME;?>js/plugins/clockpicker/clockpicker.js"></script>
     <!-- Data picker -->
     <script src="<?php echo URL_THEME;?>js/plugins/datapicker/bootstrap-datepicker.js"></script>
+<script src="https://cdn.jsdelivr.net/bootstrap.datepicker-fork/1.3.0/js/locales/bootstrap-datepicker.it.js"></script>
 
     <!--Gallery--><!-- blueimp gallery -->
     <script src="<?php echo URL_THEME;?>js/plugins/blueimp/jquery.blueimp-gallery.min.js"></script>
@@ -108,8 +109,13 @@ END PAGE
         });
 
 
+        $(document).ready(function(){
+            $.fn.datepicker.defaults.language = 'it';
+        });
+
         // Clock picker
         $('.clockpicker').clockpicker();
+
         // Datapicker (bootstrap datepicker)
         var mem = $('.datapickerbox .input-group.date').datepicker({
             todayBtn: "linked",
@@ -117,10 +123,30 @@ END PAGE
             forceParse: false,
             calendarWeeks: true,
             autoclose: true,
-            format: 'dd/mm/yyyy'
+            format: 'dd/mm/yyyy',
+            locale: 'it'
+            //
+            // changeMonth: true,
+            // changeYear: true,
+            // closeText: 'Chiudi',
+            // prevText: 'Prec',
+            // nextText: 'Succ',
+            // currentText: 'Oggi',
+            // monthNames: ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno', 'Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'],
+            // monthNamesShort: ['Gen','Feb','Mar','Apr','Mag','Giu', 'Lug','Ago','Set','Ott','Nov','Dic'],
+            // dayNames: ['Domenica','Lunedì','Martedì','Mercoledì','Giovedì','Venerdì','Sabato'],
+            // dayNamesShort: ['Dom','Lun','Mar','Mer','Gio','Ven','Sab'],
+            // dayNamesMin: ['Do','Lu','Ma','Me','Gio','Ve','Sa'],
+            // dateFormat: 'dd/mm/yy',
+            // firstDay: 1,
+            // isRTL: false
         });
 
+
         $(document).ready(function () {
+
+
+
             // Only numbers
             $(".only-numbers").keydown(function (e) {
                 // Allow: backspace, delete, tab, escape, enter and .
