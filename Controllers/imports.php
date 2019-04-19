@@ -7,7 +7,7 @@
 // error_reporting(E_ERROR | E_PARSE);
 //ini_set('display_errors', 1);
 //ini_set('display_startup_errors', 1);
-//error_reporting(E_ALL);
+error_reporting(E_ALL);
 // Modelli
 require 'Models/aste_model.php';
 require 'Models/agency_model.php';
@@ -133,12 +133,13 @@ class Imports extends Controller {
     
     
     
-    
+
     // POST: Save Import
     public function saveImport($error=null) {
+
         $target_file = $_POST["target_file"];
         $this->view->target_file = $target_file;
-        
+
         // Inserisci Nuova IMPORT
         $data = array(
             ':createdAt' => date("Y-m-d H:i:s"),
@@ -146,13 +147,15 @@ class Imports extends Controller {
             ':fileName' => $target_file,
             ':status' => "on",
         );
+
         // INSERT
         $importModel = new Imports_Model();
         $idImport = $importModel->create($data);
-        
+
         if ( $idImport>0 ) {
             // Read File e SALVA ASTE
             $arrImmobili = $this->readImporFile($target_file,"prod",$idImport);
+
             // Vai a Importazioni
             $this->index(NULL);
         } else {
@@ -1335,25 +1338,44 @@ class Imports extends Controller {
                                             $message .= "--$mime_boundary\n";
 
                                             //Create ICAL Content (Google rfc 2445 for details and examples of usage)
-                                            $ical =    'BEGIN:VCALENDAR
-                                                    PRODID:-//Microsoft Corporation//Outlook 11.0 MIMEDIR//EN
-                                                    VERSION:2.0
-                                                    METHOD:PUBLISH
-                                                    BEGIN:VEVENT
-                                                    ORGANIZER:MAILTO:'.$this->view->platformData["emailFrom"].'
-                                                    DTSTART:'.$dtstart.'
-                                                    DTEND:'.$dtend.'
-                                                    LOCATION:'.$meeting_location.'
-                                                    TRANSP:OPAQUE
-                                                    SEQUENCE:0
-                                                    UID:'.$cal_uid.'
-                                                    DTSTAMP:'.$todaystamp.'
-                                                    DESCRIPTION:'.$meeting_description.'
-                                                    SUMMARY:'.$subject.'
-                                                    PRIORITY:5
-                                                    CLASS:PUBLIC
-                                                    END:VEVENT
-                                                    END:VCALENDAR';
+
+                                            $ical =    'BEGIN:VCALENDAR'
+                                                .PHP_EOL.
+                                                'PRODID:-//Microsoft Corporation//Outlook 11.0 MIMEDIR//EN'
+                                                .PHP_EOL.
+                                                'VERSION:2.0'
+                                                .PHP_EOL.
+                                                'METHOD:PUBLISH'
+                                                .PHP_EOL.
+                                                'BEGIN:VEVENT'
+                                                .PHP_EOL.
+                                                'ORGANIZER:MAILTO:'.$this->view->platformData["emailFrom"]
+                                                .PHP_EOL.
+                                                "DTSTART:".$dtstart
+                                                .PHP_EOL.
+                                                "DTEND:".$dtend
+                                                .PHP_EOL.
+                                                "LOCATION:".$meeting_location
+                                                .PHP_EOL.
+                                                "TRANSP:OPAQUE"
+                                                .PHP_EOL.
+                                                "SEQUENCE:0"
+                                                .PHP_EOL.
+                                                "UID:".$cal_uid
+                                                .PHP_EOL.
+                                                "DTSTAMP:".$todaystamp
+                                                .PHP_EOL.
+                                                'DESCRIPTION:'.$meeting_description
+                                                .PHP_EOL.
+                                                'SUMMARY:'.$subject
+                                                .PHP_EOL.
+                                                "PRIORITY:5"
+                                                .PHP_EOL.
+                                                "CLASS:PUBLIC"
+                                                .PHP_EOL.
+                                                "END:VEVENT"
+                                                .PHP_EOL.
+                                                "END:VCALENDAR";
                                             $message .= 'Content-Type: text/calendar;name="meeting.ics";method=REQUEST\n';
                                             $message .= "Content-Transfer-Encoding: 8bit\n\n";
                                             $message .= $ical;
@@ -1385,9 +1407,9 @@ class Imports extends Controller {
                 array_push($arrImmobili, $nuovoImmobile);
             }
         }
-        if ($tipoElaborazione!='test') {
-            exit;
-        }
+//        if ($tipoElaborazione!='test') {
+//            exit;
+//        }
         // Return
         return $arrImmobili;
     }

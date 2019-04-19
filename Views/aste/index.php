@@ -69,9 +69,9 @@
                                 </div>
                                 <div class="col-md-4">
                                     <div class="form-group">
-                                        <label>Rge</label>
+                                        <label>ID# Asta</label>
                                         <input class="form-control"
-                                               placeholder="Cerca per RGE" name="rgeFilter"
+                                               placeholder="Cerca per ID# Asta" name="rgeFilter"
                                                value="<?php if (isset($_POST["rgeFilter"])) {echo $_POST["rgeFilter"];} ?>" >
                                     </div>
                                 </div>

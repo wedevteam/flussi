@@ -268,10 +268,7 @@ class Aste extends Controller {
                     "flagRichiestaVisione" =>$flagRichiestaVisione,
                     "dataRichiestaVisione" =>$dataRichiestaVisione
                 );
-                
-                if ($this->view->userLogged["role"]!="admin" && $toInsert) {
-                    array_push($arrAsteListAgPreFilter, $arrItem);
-                }
+
                 
                 // Filtri
                 if (isset($_POST["btnSearch"])) {
@@ -289,16 +286,25 @@ class Aste extends Controller {
                             $toInsert = true;
                         }
                     }
-                    // Rge
+                    // Id
                     if (isset($_POST["rgeFilter"]) && $_POST["rgeFilter"]!=""  && $_POST["rgeFilter"]!=null) {
                         $toInsert = false;
-                        if ($_POST["rgeFilter"]==$item["rge"]) {
-                            $toInsert = true;
+                        if ($this->view->userLogged["role"]=="admin") {
+                            if ($_POST["rgeFilter"]==$item["id"]) {
+                                $toInsert = true;
+                            }
+                        } else {
+                            if ($_POST["rgeFilter"]==$item["id"]."-".$this->view->userLogged["id"]) {
+                                $toInsert = true;
+                            }
                         }
                     }
-
                 }
-                
+
+                if ($this->view->userLogged["role"]!="admin" && $toInsert) {
+                    array_push($arrAsteListAgPreFilter, $arrItem);
+                }
+
                 // Add
                 if ($toInsert) {
                     array_push($arrAsteList, $arrItem);
@@ -547,26 +553,44 @@ class Aste extends Controller {
                 $message .= "</html>\n";
                 $message .= "--$mime_boundary\n";
 
-                //Create ICAL Content (Google rfc 2445 for details and examples of usage) 
-                $ical =    'BEGIN:VCALENDAR
-                    PRODID:-//Microsoft Corporation//Outlook 11.0 MIMEDIR//EN
-                    VERSION:2.0
-                    METHOD:PUBLISH
-                    BEGIN:VEVENT
-                    ORGANIZER:MAILTO:'.$this->view->platformData["emailFrom"].'
-                    DTSTART:'.$dtstart.'
-                    DTEND:'.$dtend.'
-                    LOCATION:'.$meeting_location.'
-                    TRANSP:OPAQUE
-                    SEQUENCE:0
-                    UID:'.$cal_uid.'
-                    DTSTAMP:'.$todaystamp.'
-                    DESCRIPTION:'.$meeting_description.'
-                    SUMMARY:'.$subject.'
-                    PRIORITY:5
-                    CLASS:PUBLIC
-                    END:VEVENT
-                    END:VCALENDAR';
+                //Create ICAL Content (Google rfc 2445 for details and examples of usage)
+                $ical =    'BEGIN:VCALENDAR'
+                    .PHP_EOL.
+                    'PRODID:-//Microsoft Corporation//Outlook 11.0 MIMEDIR//EN'
+                    .PHP_EOL.
+                    'VERSION:2.0'
+                    .PHP_EOL.
+                    'METHOD:PUBLISH'
+                    .PHP_EOL.
+                    'BEGIN:VEVENT'
+                    .PHP_EOL.
+                    'ORGANIZER:MAILTO:'.$this->view->platformData["emailFrom"]
+                    .PHP_EOL.
+                    "DTSTART:".$dtstart
+                    .PHP_EOL.
+                    "DTEND:".$dtend
+                    .PHP_EOL.
+                    "LOCATION:".$meeting_location
+                    .PHP_EOL.
+                    "TRANSP:OPAQUE"
+                    .PHP_EOL.
+                    "SEQUENCE:0"
+                    .PHP_EOL.
+                    "UID:".$cal_uid
+                    .PHP_EOL.
+                    "DTSTAMP:".$todaystamp
+                    .PHP_EOL.
+                    'DESCRIPTION:'.$meeting_description
+                    .PHP_EOL.
+                    'SUMMARY:'.$subject
+                    .PHP_EOL.
+                    "PRIORITY:5"
+                    .PHP_EOL.
+                    "CLASS:PUBLIC"
+                    .PHP_EOL.
+                    "END:VEVENT"
+                    .PHP_EOL.
+                    "END:VCALENDAR";
                 $message .= 'Content-Type: text/calendar;name="meeting.ics";method=REQUEST\n';
                 $message .= "Content-Transfer-Encoding: 8bit\n\n";
                 $message .= $ical;
@@ -641,10 +665,10 @@ class Aste extends Controller {
             $cal_uid = DATE('Ymd').'T'.DATE('His')."-".RAND()."@ym-dev.com";
 
             //Create Mime Boundry
-            $mime_boundary = "----Meeting Booking----".MD5(TIME());
+            $mime_boundary = "----App.to ASTA----".MD5(TIME());
 
             // Predisponi INVIO
-            $to      = $this->view->userLogged["email"];  // "pamela.palazzini@wedevteam.com";
+            $to      = $this->view->userLogged["email"]; // "pamela.palazzini@wedevteam.com"; //
             $subject = 'Appuntamento ASTA | '.$this->view->platformData["siteName"];
             include ('public/template/utente_apptoasta.php');
             $headers = "From: ".$this->view->platformData["emailFromDesc"]." <".$this->view->platformData["emailFrom"].">". "\r\n";
@@ -667,30 +691,46 @@ class Aste extends Controller {
             $message .= "</html>\n";
             $message .= "--$mime_boundary\n";
 
-            //Create ICAL Content (Google rfc 2445 for details and examples of usage)
-            $ical =    'BEGIN:VCALENDAR
-                PRODID:-//Microsoft Corporation//Outlook 11.0 MIMEDIR//EN
-                VERSION:2.0
-                METHOD:PUBLISH
-                BEGIN:VEVENT
-                ORGANIZER:MAILTO:'.$this->view->platformData["emailFrom"].'
-                DTSTART:'.$dtstart.'
-                DTEND:'.$dtend.'
-                LOCATION:'.$meeting_location.'
-                TRANSP:OPAQUE
-                SEQUENCE:0
-                UID:'.$cal_uid.'
-                DTSTAMP:'.$todaystamp.'
-                DESCRIPTION:'.$meeting_description.'
-                SUMMARY:'.$subject.'
-                PRIORITY:5
-                CLASS:PUBLIC
-                END:VEVENT
-                END:VCALENDAR';
+            $ical =    'BEGIN:VCALENDAR'
+                .PHP_EOL.
+                'PRODID:-//Microsoft Corporation//Outlook 11.0 MIMEDIR//EN'
+                .PHP_EOL.
+                'VERSION:2.0'
+                .PHP_EOL.
+                'METHOD:PUBLISH'
+                .PHP_EOL.
+                'BEGIN:VEVENT'
+                .PHP_EOL.
+                'ORGANIZER:MAILTO:'.$this->view->platformData["emailFrom"]
+                .PHP_EOL.
+                "DTSTART:".$dtstart
+                .PHP_EOL.
+                "DTEND:".$dtend
+                .PHP_EOL.
+                "LOCATION:".$meeting_location
+                .PHP_EOL.
+                "TRANSP:OPAQUE"
+                .PHP_EOL.
+                "SEQUENCE:0"
+                .PHP_EOL.
+                "UID:".$cal_uid
+                .PHP_EOL.
+                "DTSTAMP:".$todaystamp
+                .PHP_EOL.
+                'DESCRIPTION:'.$meeting_description
+                .PHP_EOL.
+                'SUMMARY:'.$subject
+                .PHP_EOL.
+                "PRIORITY:5"
+                .PHP_EOL.
+                "CLASS:PUBLIC"
+                .PHP_EOL.
+                "END:VEVENT"
+                .PHP_EOL.
+                "END:VCALENDAR";
             $message .= 'Content-Type: text/calendar;name="meeting.ics";method=REQUEST\n';
             $message .= "Content-Transfer-Encoding: 8bit\n\n";
             $message .= $ical;
-
 
             //Invia email
             if (!$funcionsModel->sendEmailWithResult ($to, $subject, $message, $headers) ){
@@ -1939,18 +1979,32 @@ class Aste extends Controller {
             }
             $this->view->comuniTribunaleList = $arrComuniTribunaleList;
             // Cap in base a COMUNI DISPONIBILI
+//            if (is_array($capList) || is_object($capList)) {
+//                if (sizeof($arrComuniList)>0) {
+//                    foreach($arrComuniList as $comune){
+//                        // Cap
+//                        foreach($capList as $cap){
+//                            $arrItem = array(
+//                                "codiceIstat"=>$cap["codiceIstat"],
+//                                "cap"=>$cap["cap"]
+//                            );
+//                            if ($functionsModel->ConvertCodiceIstat($comune["codice_istat"] ) == $functionsModel->ConvertCodiceIstat($cap["codiceIstat"] )) {
+//                                array_push($arrCap, $arrItem);
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+
             if (is_array($capList) || is_object($capList)) {
-                if (sizeof($arrComuniList)>0) {
-                    foreach($arrComuniList as $comune){
-                        // Cap
-                        foreach($capList as $cap){
+                if (is_array($relAgPrefViewList) || is_object($relAgPrefViewList)) {
+                    foreach($relAgPrefViewList as $rel){
+                        if ($rel["tipoPreferenza"] == "cap") {
+                            // Cap
                             $arrItem = array(
-                                "codiceIstat"=>$cap["codiceIstat"],
-                                "cap"=>$cap["cap"]
+                                "cap"=>$rel["idOggetto"]
                             );
-                            if ($functionsModel->ConvertCodiceIstat($comune["codice_istat"] ) == $functionsModel->ConvertCodiceIstat($cap["codiceIstat"] )) {
-                                array_push($arrCap, $arrItem);
-                            }
+                            array_push($arrCap, $arrItem);
                         }
                     }
                 }
