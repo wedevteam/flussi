@@ -1874,9 +1874,6 @@ class Exports extends Controller {
                             if ($img["fonte"]=="manuale" && $img["idAgenzia"]==$asta['idAgenzia']) {
                                 $trovato = true;
                             }
-                            if ($img["fonte"]=="manuale" && $img["idAgenzia"]==0) {
-                                $trovato = true;
-                            }
                         }
                         if ($trovato) {
                             //SottoNodo Immagine
